@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
@@ -67,23 +66,24 @@
     <header class="sticky top-0 z-40 glass-card border-b border-slate-800 px-4 py-3 shadow-xl">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             
-            <!-- Logo & Brand Name -->
+            <!-- Right Side: Account / Registration Button & Brand Name -->
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-xl font-bold text-white shadow-lg shadow-purple-500/30">
-                    <i class="fa-solid font-black">⚡</i>
-                </div>
-                <span class="font-black text-xl bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent hidden sm:inline">
+                <!-- Profile Button (User Icon / Registration) moved to right side -->
+                <button onclick="toggleProfileModal()" class="flex items-center gap-2 bg-slate-800/80 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 hover:border-purple-500 px-3 py-2 rounded-xl transition duration-300 group">
+                    <div class="w-8 h-8 rounded-full bg-purple-600/40 flex items-center justify-center text-purple-200 group-hover:bg-purple-500 group-hover:text-white transition">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <span class="text-xs sm:text-sm font-semibold">حساب کاربری / ثبت نام</span>
+                </button>
+            </div>
+
+            <!-- Left Side: Brand Name (Icon Removed) -->
+            <div class="flex items-center gap-3">
+                <span class="font-black text-xl bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">
                     گیمینگ استور
                 </span>
             </div>
 
-            <!-- Profile Button (User Icon) -->
-            <button onclick="toggleProfileModal()" class="flex items-center gap-2 bg-slate-800/80 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 hover:border-purple-500 px-3 py-2 rounded-xl transition duration-300 group">
-                <div class="w-8 h-8 rounded-full bg-purple-600/40 flex items-center justify-center text-purple-200 group-hover:bg-purple-500 group-hover:text-white transition">
-                    <i class="fa-solid fa-user"></i>
-                </div>
-                <span class="text-xs sm:text-sm font-semibold">حساب کاربری</span>
-            </button>
         </div>
 
         <!-- Category Menu Bars (Main Pages Navigation) -->
@@ -108,6 +108,17 @@
     <!-- HERO / BANNER SECTION -->
     <main class="max-w-7xl mx-auto px-4 py-6 w-full flex-grow">
         
+        <!-- IDENTITY BOX (هویت من) - Transferred to Main Page -->
+        <div class="bg-gradient-to-r from-purple-900/40 to-slate-800 border border-purple-500/40 p-4 sm:p-5 rounded-2xl mb-8 shadow-lg">
+            <div class="flex items-center gap-2 text-amber-400 font-bold text-base mb-2">
+                <i class="fa-solid fa-user-shield"></i>
+                <span>هویت من (معرفی مدیر)</span>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-200 leading-relaxed">
+                بنده محمدمهدی پورمهدی، دارنده مجموعه گیمینگ با بیش از ۴ سال سابقه در حوزه خدمات گیمینگ، ارائه خدمات کافی‌نت و پشتیبانی تخصصی. تعهد و پاسخگویی سابقه ماست!
+            </p>
+        </div>
+
         <!-- Section Title -->
         <div class="flex items-center justify-between mb-6">
             <div>
@@ -146,7 +157,7 @@
                 </p>
             </div>
 
-            <!-- Support Box -->
+            <!-- Support Box (Click Action Disabled) -->
             <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white text-2xl shadow-lg shadow-cyan-500/30">
@@ -157,7 +168,7 @@
                         <p class="text-xs text-slate-400 mt-1">پاسخگویی سریع در تلگرام و واتساپ</p>
                     </div>
                 </div>
-                <a href="https://t.me/" target="_blank" class="w-full sm:w-auto text-center bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold px-5 py-2.5 rounded-xl transition duration-300 flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/20">
+                <a href="javascript:void(0)" class="w-full sm:w-auto text-center bg-cyan-500/50 cursor-default text-slate-950 font-bold px-5 py-2.5 rounded-xl transition duration-300 flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/10">
                     <i class="fa-brands fa-telegram text-lg"></i>
                     ارتباط با پشتیبان
                 </a>
@@ -170,7 +181,7 @@
         </div>
     </footer>
 
-    <!-- MODAL 1: USER ACCOUNT & identity BOX -->
+    <!-- MODAL 1: USER ACCOUNT -->
     <div id="profile-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-purple-500/30 w-full max-w-md rounded-3xl p-6 shadow-2xl relative animate-fade-in">
             
@@ -186,19 +197,8 @@
                 </div>
                 <div>
                     <h3 class="text-xl font-bold text-white">حساب کاربری</h3>
-                    <p class="text-xs text-purple-400">اطلاعات شخص و مدیریت اکانت</p>
+                    <p class="text-xs text-purple-400">اطلاعات شخصی و مدیریت اکانت</p>
                 </div>
-            </div>
-
-            <!-- IDENTITY BOX (هویت من) -->
-            <div class="bg-gradient-to-r from-purple-900/40 to-slate-800 border border-purple-500/40 p-4 rounded-2xl mb-6">
-                <div class="flex items-center gap-2 text-amber-400 font-bold text-sm mb-2">
-                    <i class="fa-solid fa-user-shield"></i>
-                    <span>هویت من (معرفی مدیر)</span>
-                </div>
-                <p class="text-xs sm:text-sm text-slate-200 leading-relaxed">
-                    بنده محمدمهدی پورمهدی، دارنده مجموعه گیمینگ با بیش از ۴ سال سابقه در حوزه خدمات گیمینگ، ارائه خدمات کافی‌نت و پشتیبانی تخصصی. تعهد و پاسخگویی سابقه ماست!
-                </p>
             </div>
 
             <!-- Account Details Form -->
@@ -513,4 +513,3 @@
     </script>
 </body>
 </html>
-``` 
