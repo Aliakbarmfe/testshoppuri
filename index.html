@@ -130,8 +130,8 @@
             </button>
         </div>
 
-        <!-- PRODUCTS GRID (Updated for 2 columns on mobile) -->
-        <div id="products-container" class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+        <!-- PRODUCTS GRID (Updated to 1 column on mobile: grid-cols-1, 2 on tablet: sm:grid-cols-2, 3 on desktop: lg:grid-cols-3) -->
+        <div id="products-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             <!-- Dynamic Content Will Be Generated via JS -->
         </div>
     </main>
@@ -364,7 +364,7 @@
                 card.innerHTML = `
                     <div>
                         <!-- Image & Tag -->
-                        <div class="relative h-36 sm:h-48 overflow-hidden">
+                        <div class="relative h-44 sm:h-48 overflow-hidden">
                             <img src="${product.image}" alt="${product.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
                             <span class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-purple-600/90 text-white text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full shadow-md">
                                 ${product.tag}
@@ -372,21 +372,21 @@
                         </div>
 
                         <!-- Info -->
-                        <div class="p-3 sm:p-5">
-                            <h3 class="font-bold text-sm sm:text-lg text-white mb-2 line-clamp-1 sm:line-clamp-none">${product.title}</h3>
-                            <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                                <span class="text-[11px] sm:text-xs text-slate-500 line-through">${product.oldPrice}</span>
-                                <span class="text-xs sm:text-base font-extrabold text-amber-400">${product.price} تومان</span>
+                        <div class="p-4 sm:p-5">
+                            <h3 class="font-bold text-base sm:text-lg text-white mb-2 line-clamp-1 sm:line-clamp-none">${product.title}</h3>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs text-slate-500 line-through">${product.oldPrice}</span>
+                                <span class="text-sm sm:text-base font-extrabold text-amber-400">${product.price} تومان</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="p-3 sm:p-5 pt-0 flex flex-col sm:flex-row gap-2">
-                        <button onclick="addToCart(${product.id})" class="flex-1 bg-slate-800 hover:bg-slate-700 text-purple-300 font-bold py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-sm transition flex items-center justify-center gap-1">
+                    <div class="p-4 sm:p-5 pt-0 flex gap-2">
+                        <button onclick="addToCart(${product.id})" class="flex-1 bg-slate-800 hover:bg-slate-700 text-purple-300 font-bold py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1">
                             <i class="fa-solid fa-cart-plus"></i> افزودن
                         </button>
-                        <button onclick="quickOrder(${product.id})" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 sm:py-2.5 rounded-xl text-[11px] sm:text-sm transition flex items-center justify-center gap-1 shadow-md shadow-purple-600/30">
+                        <button onclick="quickOrder(${product.id})" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1 shadow-md shadow-purple-600/30">
                             ثبت سفارش
                         </button>
                     </div>
