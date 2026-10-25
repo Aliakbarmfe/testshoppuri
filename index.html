@@ -1,530 +1,273 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>فروشگاه گیمینگ و خدمات آنلاین</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Vazirmatn Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>فروشگاه آنلاین</title>
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css');
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Vazirmatn', sans-serif; }
+    body { background-color: #f8f9fa; color: #333; line-height: 1.6; }
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Vazirmatn', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            purple: '#7c3aed',
-                            dark: '#0f172a',
-                            card: '#1e293b',
-                            accent: '#06b6d4',
-                            gold: '#fbbf24',
-                            magenta: '#ec4899'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        body {
-            font-family: 'Vazirmatn', sans-serif;
-            color: #f1f5f9;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            transition: background-image 0.4s ease-in-out;
-        }
-        /* Custom Neon Glows */
-        .neon-border {
-            box-shadow: 0 0 15px rgba(124, 58, 237, 0.4);
-        }
-        .neon-border:hover {
-            box-shadow: 0 0 25px rgba(236, 72, 153, 0.7);
-        }
-        .glass-card {
-            background: rgba(30, 41, 59, 0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        /* Hide Scrollbar for clean UI */
-        .no-scrollbar::-webkit-scrollbar {
-            display: none;
-        }
-        .no-scrollbar {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-        }
-    </style>
+    header { background: #111; color: white; padding: 20px; text-align: center; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+
+    /* ناوبری بخش‌ها */
+    .nav-tabs { display: flex; justify-content: center; gap: 10px; margin: 20px 0; flex-wrap: wrap; }
+    .tab-btn { padding: 10px 20px; border: none; border-radius: 8px; background: #e9ecef; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    .tab-btn.active { background: #007bff; color: white; }
+
+    .section-title { font-size: 1.5rem; margin: 30px 0 15px; border-right: 4px solid #007bff; padding-right: 10px; }
+
+    /* گرید محصولات */
+    .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+    .product-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); cursor: pointer; transition: transform 0.2s; display: flex; flex-direction: column; justify-content: space-between; padding: 15px; }
+    .product-card:hover { transform: translateY(-5px); }
+    
+    .product-img-wrapper { position: relative; width: 100%; height: 180px; border-radius: 8px; overflow: hidden; background: #eee; }
+    .product-img { width: 100%; height: 100%; object-fit: cover; }
+    .product-badge { position: absolute; top: 10px; right: 10px; background: #ffc107; color: #000; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; }
+
+    .product-info { margin-top: 12px; }
+    .product-name { font-size: 1rem; font-weight: bold; margin-bottom: 8px; }
+    
+    .price-box { margin-top: 10px; }
+    .price-main-old { text-decoration: line-through; color: #888; font-size: 0.85rem; }
+    .price-discount-new { color: #e63946; font-size: 1.2rem; font-weight: bold; }
+    .price-single { color: #2b2d42; font-size: 1.1rem; font-weight: bold; }
+
+    /* مودم جزئیات محصول */
+    .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 15px; }
+    .modal.active { display: flex; }
+    .modal-content { background: white; width: 100%; max-width: 600px; max-height: 90vh; border-radius: 12px; overflow-y: auto; padding: 20px; position: relative; }
+    .close-modal { position: absolute; top: 15px; left: 15px; background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+
+    /* اسکرول افقی عکس‌های اضافی */
+    .extra-imgs-container { display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; scroll-behavior: smooth; }
+    .extra-img { width: 90px; height: 90px; object-fit: cover; border-radius: 6px; flex-shrink: 0; border: 1px solid #ddd; }
+
+    .card-info-box { background: #f1f3f5; padding: 12px; border-radius: 8px; margin: 15px 0; font-size: 0.9rem; }
+    .action-buttons { display: flex; gap: 10px; margin-top: 20px; }
+    .btn { flex: 1; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: not-allowed; opacity: 0.7; font-size: 1rem; }
+    .btn-add { background: #6c757d; color: white; }
+    .btn-order { background: #adb5bd; color: white; }
+
+    /* فوتر */
+    footer { background: #212529; color: white; padding: 30px 20px; text-align: center; margin-top: 50px; }
+    .channel-link { display: inline-block; margin-top: 15px; background: #0088cc; color: white; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; }
+  </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-purple-600 selection:text-white">
+<body>
 
-    <!-- HEADER NAVIGATION -->
-    <header class="sticky top-0 z-40 glass-card border-b border-slate-800 px-4 py-3 shadow-xl">
-        <div class="max-w-7xl mx-auto flex items-center justify-between">
-            
-            <!-- Right Side: Account / Registration Button & Brand Name -->
-            <div class="flex items-center gap-3">
-                <!-- Profile Button (User Icon / Registration) moved to right side -->
-                <button onclick="toggleProfileModal()" class="flex items-center gap-2 bg-slate-800/80 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 hover:border-purple-500 px-3 py-2 rounded-xl transition duration-300 group">
-                    <div class="w-8 h-8 rounded-full bg-purple-600/40 flex items-center justify-center text-purple-200 group-hover:bg-purple-500 group-hover:text-white transition">
-                        <i class="fa-solid fa-user"></i>
-                    </div>
-                    <span class="text-xs sm:text-sm font-semibold">حساب کاربری / ثبت نام</span>
-                </button>
+  <header>
+    <h1>فروشگاه آنلاین</h1>
+  </header>
+
+  <div class="container">
+    <!-- تب‌های دسته‌بندی -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="switchSection('home')">صفحه اصلی</button>
+      <button class="tab-btn" onclick="switchSection('cod')">کالاف دیوتی</button>
+      <button class="tab-btn" onclick="switchSection('cp')">سی پی</button>
+      <button class="tab-btn" onclick="switchSection('gap_channel')">گپ و چنل</button>
+    </div>
+
+    <!-- بخش نمایش محصولات -->
+    <div id="sectionContainer"></div>
+  </div>
+
+  <!-- مودم جزئیات محصول -->
+  <div class="modal" id="productModal">
+    <div class="modal-content" id="modalBodyContent">
+      <!-- محتوا داینامیک تزریق می‌شود -->
+    </div>
+  </div>
+
+  <!-- فوتر -->
+  <footer>
+    <p id="footerDesc">در حال بارگذاری توضیحات سایت...</p>
+    <a id="footerChannelBtn" href="#" target="_blank" class="channel-link" style="display: none;">ورود به کانال تلگرام</a>
+  </footer>
+
+  <script>
+    let activeCategory = 'home';
+    let allProductsData = {};
+    let autoScrollInterval = null;
+
+    async function fetchAPI(path) {
+      try {
+        const res = await fetch(`/api/firebase?path=${path}`);
+        return await res.json();
+      } catch (e) {
+        return null;
+      }
+    }
+
+    async function loadSettings() {
+      const desc = await fetchAPI('settings/siteDescription');
+      if (desc) document.getElementById('footerDesc').innerText = desc;
+
+      const channel = await fetchAPI('settings/channelLink');
+      if (channel) {
+        const btn = document.getElementById('footerChannelBtn');
+        btn.href = channel;
+        btn.style.display = 'inline-block';
+      }
+    }
+
+    async function switchSection(category) {
+      activeCategory = category;
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const container = document.getElementById('sectionContainer');
+      container.innerHTML = '<div style="text-align:center; padding:30px;">در حال بارگذاری محصولات...</div>';
+
+      const data = await fetchAPI(`products/${category}`);
+      allProductsData = data || {};
+
+      renderProducts();
+    }
+
+    function renderProducts() {
+      const container = document.getElementById('sectionContainer');
+      container.innerHTML = '';
+
+      if (!allProductsData || Object.keys(allProductsData).length === 0) {
+        container.innerHTML = '<div style="text-align:center; padding:30px; color:#666;">محصولی در این بخش وجود ندارد.</div>';
+        return;
+      }
+
+      let gridHtml = '<div class="products-grid">';
+      for (const [id, item] of Object.entries(allProductsData)) {
+        let priceHtml = '';
+        if (activeCategory === 'home') {
+          priceHtml = `
+            <div class="price-box">
+              <div class="price-main-old">${item.priceMain ? item.priceMain.toLocaleString() + ' تومان' : ''}</div>
+              <div class="price-discount-new">${item.priceDiscount ? item.priceDiscount.toLocaleString() + ' تومان' : ''}</div>
             </div>
-
-            <!-- Left Side: Brand Name (Icon Removed) -->
-            <div class="flex items-center gap-3">
-                <span class="font-black text-xl bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">
-                    گیمینگ استور
-                </span>
+          `;
+        } else {
+          priceHtml = `
+            <div class="price-box">
+              <div class="price-single">${item.priceSingle ? item.priceSingle.toLocaleString() + ' تومان' : 'تماس بگیرید'}</div>
             </div>
+          `;
+        }
 
-        </div>
-
-        <!-- Category Menu Bars (Main Pages Navigation) -->
-        <div class="max-w-7xl mx-auto mt-3 pt-2 border-t border-slate-800/60">
-            <nav class="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto no-scrollbar pb-1">
-                <button onclick="setActiveTab('all')" id="tab-all" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-600/30">
-                    <i class="fa-solid fa-house ml-1"></i> صفحه اصلی
-                </button>
-                <button onclick="setActiveTab('codm')" id="tab-codm" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
-                    <i class="fa-solid fa-gamepad ml-1"></i> کالاف دیوتی موبایل
-                </button>
-                <button onclick="setActiveTab('cp')" id="tab-cp" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
-                    <i class="fa-solid fa-coins ml-1"></i> خرید سیپی
-                </button>
-                <button onclick="setActiveTab('gap')" id="tab-gap" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
-                    <i class="fa-solid fa-comments ml-1"></i> گپ چنل
-                </button>
-            </nav>
-        </div>
-    </header>
-
-    <!-- HERO / BANNER SECTION -->
-    <main class="max-w-7xl mx-auto px-4 py-6 w-full flex-grow">
-        
-        <!-- Section Title -->
-        <div class="flex items-center justify-between mb-6">
+        gridHtml += `
+          <div class="product-card" onclick="openProductModal('${id}')">
             <div>
-                <h1 id="page-title" class="text-2xl sm:text-3xl font-extrabold text-white flex items-center gap-2">
-                    <span class="w-3 h-8 bg-purple-500 rounded-full inline-block"></span>
-                    محصولات آفر‌دار و ویژه
-                </h1>
-                <p id="page-subtitle" class="text-xs sm:text-sm text-slate-400 mt-1">تخفیف‌های داغ و محدود تمامی بخش‌ها</p>
+              <div class="product-img-wrapper">
+                <img src="${item.mainImg || ''}" class="product-img" alt="${item.name}">
+                ${item.tag ? `<span class="product-badge">${item.tag}</span>` : ''}
+              </div>
+              <div class="product-info">
+                <div class="product-name">${item.name}</div>
+              </div>
             </div>
-            
-            <!-- Shopping Cart Quick Button -->
-            <button onclick="toggleCartModal()" class="relative bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold px-4 py-2 rounded-xl shadow-lg shadow-amber-500/20 flex items-center gap-2 transition">
-                <i class="fa-solid fa-cart-shopping"></i>
-                <span class="hidden sm:inline">سبد خرید</span>
-                <span id="cart-count" class="bg-slate-950 text-amber-400 text-xs w-5 h-5 rounded-full flex items-center justify-center font-black">0</span>
-            </button>
-        </div>
+            ${priceHtml}
+          </div>
+        `;
+      }
+      gridHtml += '</div>';
+      container.innerHTML = gridHtml;
+    }
 
-        <!-- PRODUCTS GRID (تعداد ستون‌ها بر اساس بخش فعال از طریق JS تنظیم می‌شود) -->
-        <div id="products-container" class="grid grid-cols-1 gap-4 sm:gap-6">
-            <!-- Dynamic Content Will Be Generated via JS -->
-        </div>
-    </main>
+    function openProductModal(id) {
+      const item = allProductsData[id];
+      if (!item) return;
 
-    <!-- FOOTER SECTION -->
-    <footer class="glass-card border-t border-slate-800 mt-12 py-8 px-4">
-        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-            
-            <!-- Left Side: About Website & Support -->
-            <div class="space-y-3">
-                <h3 class="text-lg font-bold text-purple-400 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-info"></i> درباره سایت ما
-                </h3>
-                <p class="text-sm text-slate-300 leading-relaxed max-w-md">
-                    فروشگاه آنلاین ما مرجع تخصصی ارائه خدمات گیمینگ، خرید سی‌پس کالاف دیوتی، اکانت‌ها و خدمات چنل با نازل‌ترین قیمت و تحویل فوری است. امنیت و رضایت شما اولویت اصلی ماست.
-                </p>
+      let extraImgsHtml = '';
+      if (item.extraImgs && item.extraImgs.length > 0) {
+        extraImgsHtml = `
+          <div style="margin: 15px 0;">
+            <label style="font-weight: bold; font-size: 0.9rem; display: block; margin-bottom: 5px;">تصاویر بیشتر:</label>
+            <div class="extra-imgs-container" id="extraImgsScroll">
+              ${item.extraImgs.map(img => `<img src="${img}" class="extra-img">`).join('')}
             </div>
+          </div>
+        `;
+      }
 
-            <!-- Support Box (Click Action Disabled) -->
-            <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div class="flex items-center gap-4">
-                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white text-2xl shadow-lg shadow-cyan-500/30">
-                        <i class="fa-solid fa-headset"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-white text-base">پشتیبانی آنلاین</h4>
-                        <p class="text-xs text-slate-400 mt-1">پاسخگویی سریع در تلگرام و واتساپ</p>
-                    </div>
-                </div>
-                <a href="javascript:void(0)" class="w-full sm:w-auto text-center bg-cyan-500/50 cursor-default text-slate-950 font-bold px-5 py-2.5 rounded-xl transition duration-300 flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/10">
-                    <i class="fa-brands fa-telegram text-lg"></i>
-                    ارتباط با پشتیبان
-                </a>
-            </div>
+      let priceDetailsHtml = '';
+      if (activeCategory === 'home') {
+        priceDetailsHtml = `
+          <div style="margin: 10px 0;">
+            <span class="price-main-old">قیمت اصلی: ${item.priceMain ? item.priceMain.toLocaleString() + ' تومان' : ''}</span><br>
+            <span class="price-discount-new">قیمت با تخفیف: ${item.priceDiscount ? item.priceDiscount.toLocaleString() + ' تومان' : ''}</span>
+          </div>
+        `;
+      } else {
+        priceDetailsHtml = `
+          <div style="margin: 10px 0;">
+            <span class="price-single">قیمت: ${item.priceSingle ? item.priceSingle.toLocaleString() + ' تومان' : ''}</span>
+          </div>
+        `;
+      }
 
-        </div>
+      const modalContent = document.getElementById('modalBodyContent');
+      modalContent.innerHTML = `
+        <button class="close-modal" onclick="closeProductModal()">&times;</button>
+        <h2 style="margin-bottom: 10px;">${item.name}</h2>
+        <img src="${item.mainImg}" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px;">
         
-        <div class="text-center text-xs text-slate-500 mt-8 pt-4 border-t border-slate-800">
-            تمامی حقوق محفوظ است © ۲۰۲۶ | طراحی شده بر اساس سفارش مشتری
+        ${priceDetailsHtml}
+        ${extraImgsHtml}
+
+        <div style="margin: 15px 0;">
+          <h4 style="font-size: 0.95rem; margin-bottom: 5px;">توضیحات:</h4>
+          <p style="font-size: 0.9rem; color: #555; white-space: pre-line;">${item.desc || 'توضیحاتی ثبت نشده است.'}</p>
         </div>
-    </footer>
 
-    <!-- MODAL 1: USER ACCOUNT -->
-    <div id="profile-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-purple-500/30 w-full max-w-md rounded-3xl p-6 shadow-2xl relative animate-fade-in">
-            
-            <!-- Close Button -->
-            <button onclick="toggleProfileModal()" class="absolute top-4 left-4 text-slate-400 hover:text-white text-lg w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <!-- Modal Header -->
-            <div class="flex items-center gap-3 mb-6">
-                <div class="w-12 h-12 rounded-2xl bg-purple-600/30 border border-purple-500/40 flex items-center justify-center text-purple-300 text-xl">
-                    <i class="fa-solid fa-id-card"></i>
-                </div>
-                <div>
-                    <h3 class="text-xl font-bold text-white">حساب کاربری</h3>
-                    <p class="text-xs text-purple-400">اطلاعات شخصی و مدیریت اکانت</p>
-                </div>
-            </div>
-
-            <!-- Account Details Form -->
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1">نام کاربری</label>
-                    <div class="relative">
-                        <input type="text" value="User_Gamer2026" readonly class="w-full bg-slate-800/80 border border-slate-700 text-white text-sm rounded-xl px-3 py-2.5 pr-10 focus:outline-none">
-                        <i class="fa-solid fa-user absolute left-3 top-3 text-slate-500 text-sm"></i>
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-400 mb-1">رمز عبور</label>
-                    <div class="relative">
-                        <input type="password" value="••••••••" readonly class="w-full bg-slate-800/80 border border-slate-700 text-white text-sm rounded-xl px-3 py-2.5 pr-10 focus:outline-none">
-                        <i class="fa-solid fa-lock absolute left-3 top-3 text-slate-500 text-sm"></i>
-                    </div>
-                </div>
-
-                <div class="pt-2 flex gap-3">
-                    <button onclick="alert('امکان ویرایش اطلاعات به زودی فعال می‌شود.')" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 rounded-xl text-sm transition">
-                        ویرایش اطلاعات
-                    </button>
-                    <button onclick="toggleProfileModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl text-sm transition">
-                        بستن
-                    </button>
-                </div>
-            </div>
-
+        <div class="card-info-box">
+          <div><strong>شماره کارت:</strong> ${item.cardNum || 'ثبت نشده'}</div>
+          <div style="margin-top: 5px;"><strong>صاحب کارت:</strong> ${item.cardName || 'ثبت نشده'}</div>
         </div>
-    </div>
 
-    <!-- MODAL 2: SHOPPING CART & CHECKOUT -->
-    <div id="cart-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-amber-500/30 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative flex flex-col max-h-[85vh]">
-            
-            <!-- Close Button -->
-            <button onclick="toggleCartModal()" class="absolute top-4 left-4 text-slate-400 hover:text-white text-lg w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-
-            <!-- Modal Header -->
-            <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-xl">
-                    <i class="fa-solid fa-basket-shopping"></i>
-                </div>
-                <h3 class="text-xl font-bold text-white">سبد خرید شما</h3>
-            </div>
-
-            <!-- Cart Items List -->
-            <div id="cart-items" class="flex-grow overflow-y-auto space-y-3 my-3 pr-1">
-                <!-- Cart Content Populated via JS -->
-            </div>
-
-            <!-- Cart Footer Summary -->
-            <div class="pt-4 border-t border-slate-800 space-y-3">
-                <div class="flex justify-between items-center text-sm font-bold text-slate-300">
-                    <span>مبلغ قابل پرداخت:</span>
-                    <span id="cart-total-price" class="text-lg text-amber-400">۰ تومان</span>
-                </div>
-                <button onclick="processOrder()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-slate-950 font-black py-3 rounded-xl text-base shadow-lg shadow-emerald-500/20 transition">
-                    ثبت نهایی سفارش
-                </button>
-            </div>
-
+        <div class="action-buttons">
+          <button class="btn btn-add" disabled>افزودن</button>
+          <button class="btn btn-order" disabled>ثبت سفارش</button>
         </div>
-    </div>
+      `;
 
-    <!-- JAVASCRIPT LOGIC -->
-    <script>
-        // Section Background Images Mapping
-        const tabBackgrounds = {
-            all: 'photos/safhehasli.jpg',
-            codm: 'photos/safhehcallof.jpg',
-            cp: 'photos/safhehcp.jpg',
-            gap: 'photos/safhehgapchannel.jpg'
-        };
+      document.getElementById('productModal').classList.add('active');
 
-        // Sample Products Database
-        const products = [
-            {
-                id: 1,
-                title: "۸۰ سیپی کالاف دیوتی موبایل",
-                category: "cp",
-                price: "۵۵,۰۰۰",
-                oldPrice: "۷۰,۰۰۰",
-                tag: "آفر ویژه",
-                image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=500&q=80"
-            },
-            {
-                id: 2,
-                title: "۴۲۰ سیپی کالاف دیوتی موبایل",
-                category: "cp",
-                price: "۲۶۰,۰۰۰",
-                oldPrice: "۳۰۰,۰۰۰",
-                tag: "پرطرفدار",
-                image: "https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?auto=format&fit=crop&w=500&q=80"
-            },
-            {
-                id: 3,
-                title: "اکانت فول گردونه مانتا ری",
-                category: "codm",
-                price: "۱,۲۰۰,۰۰۰",
-                oldPrice: "۱,۵۰۰,۰۰۰",
-                tag: "آک‌خورده / ویژه",
-                image: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=500&q=80"
-            },
-            {
-                id: 4,
-                title: "اشتراک پریمیوم چنل تلگرام (۱ ماهه)",
-                category: "gap",
-                price: "۱۹۰,۰۰۰",
-                oldPrice: "۲۲۰,۰۰۰",
-                tag: "تحویل فوری",
-                image: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=500&q=80"
-            },
-            {
-                id: 5,
-                title: "تبلیغات ویژه در چنل گیمینگ",
-                category: "gap",
-                price: "۱۵۰,۰۰۰",
-                oldPrice: "۲۰۰,۰۰۰",
-                tag: "آفر گپ",
-                image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=500&q=80"
-            },
-            {
-                id: 6,
-                title: "بتل پاس فصل جدید کالاف دیوتی",
-                category: "codm",
-                price: "۱۸۵,۰۰۰",
-                oldPrice: "۲۱۰,۰۰۰",
-                tag: "فوری",
-                image: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=500&q=80"
-            }
-        ];
+      // راه‌اندازی اسکرول افقی خودکار عکس‌های اضافی
+      startAutoScroll();
+    }
 
-        let cart = [];
-        let currentTab = 'all';
+    function closeProductModal() {
+      document.getElementById('productModal').classList.remove('active');
+      if (autoScrollInterval) clearInterval(autoScrollInterval);
+    }
 
-        // Update Background Based on Tab (With faint purple overlay)
-        function updateBackground(tab) {
-            const bgImage = tabBackgrounds[tab] || tabBackgrounds['all'];
-            document.body.style.backgroundImage = `linear-gradient(rgba(124, 58, 237, 0.15), rgba(124, 58, 237, 0.15)), url('${bgImage}')`;
+    function startAutoScroll() {
+      const scrollContainer = document.getElementById('extraImgsScroll');
+      if (!scrollContainer) return;
+
+      if (autoScrollInterval) clearInterval(autoScrollInterval);
+
+      autoScrollInterval = setInterval(() => {
+        if (scrollContainer.scrollLeft + scrollContainer.clientWidth >= scrollContainer.scrollWidth - 5) {
+          scrollContainer.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          scrollContainer.scrollBy({ left: 120, behavior: 'smooth' });
         }
+      }, 3000);
+    }
 
-        // Render Products Based on Active Tab
-        function renderProducts() {
-            const container = document.getElementById('products-container');
-            container.innerHTML = '';
-
-            const filteredProducts = currentTab === 'all' 
-                ? products 
-                : products.filter(p => p.category === currentTab);
-
-            if (filteredProducts.length === 0) {
-                container.innerHTML = `
-                    <div class="col-span-full text-center py-12 text-slate-500">
-                        <i class="fa-solid fa-box-open text-4xl mb-3"></i>
-                        <p>هیچ محصولی در این بخش یافت نشد.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            filteredProducts.forEach(product => {
-                const card = document.createElement('div');
-                card.className = "glass-card rounded-2xl overflow-hidden border border-slate-800 hover:border-purple-500/50 transition-all duration-300 flex flex-col justify-between neon-border";
-                
-                card.innerHTML = `
-                    <div>
-                        <!-- Image & Tag -->
-                        <div class="relative h-44 sm:h-48 overflow-hidden">
-                            <img src="${product.image}" alt="${product.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
-                            <span class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-purple-600/90 text-white text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full shadow-md">
-                                ${product.tag}
-                            </span>
-                        </div>
-
-                        <!-- Info -->
-                        <div class="p-4 sm:p-5">
-                            <h3 class="font-bold text-base sm:text-lg text-white mb-2 line-clamp-1 sm:line-clamp-none">${product.title}</h3>
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs text-slate-500 line-through">${product.oldPrice}</span>
-                                <span class="text-sm sm:text-base font-extrabold text-amber-400">${product.price} تومان</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="p-4 sm:p-5 pt-0 flex gap-2">
-                        <button onclick="addToCart(${product.id})" class="flex-1 bg-slate-800 hover:bg-slate-700 text-purple-300 font-bold py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1">
-                            <i class="fa-solid fa-cart-plus"></i> افزودن
-                        </button>
-                        <button onclick="quickOrder(${product.id})" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 rounded-xl text-xs sm:text-sm transition flex items-center justify-center gap-1 shadow-md shadow-purple-600/30">
-                            ثبت سفارش
-                        </button>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        // Handle Tab Changes
-        function setActiveTab(tab) {
-            currentTab = tab;
-            
-            // Update Background Image
-            updateBackground(tab);
-
-            // Update UI tab styles
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.className = "tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700";
-            });
-
-            const activeBtn = document.getElementById(`tab-${tab}`);
-            if (activeBtn) {
-                activeBtn.className = "tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-600/30";
-            }
-
-            // Update Header Titles and Grid Columns Layout based on section
-            const pageTitle = document.getElementById('page-title');
-            const pageSubtitle = document.getElementById('page-subtitle');
-            const container = document.getElementById('products-container');
-
-            if (tab === 'all') {
-                pageTitle.innerHTML = `<span class="w-3 h-8 bg-purple-500 rounded-full inline-block"></span> محصولات آفر‌دار و ویژه`;
-                pageSubtitle.innerText = "تخفیف‌های داغ و محدود تمامی بخش‌ها";
-                container.className = "grid grid-cols-1 gap-4 sm:gap-6"; // ۱ محصول در هر ردیف
-            } else if (tab === 'codm') {
-                pageTitle.innerHTML = `<span class="w-3 h-8 bg-blue-500 rounded-full inline-block"></span> بخش کالاف دیوتی موبایل`;
-                pageSubtitle.innerText = "خرید اکانت، بتل پاس و خدمات کالاف";
-                container.className = "grid grid-cols-1 gap-4 sm:gap-6"; // ۱ محصول در هر ردیف
-            } else if (tab === 'cp') {
-                pageTitle.innerHTML = `<span class="w-3 h-8 bg-amber-500 rounded-full inline-block"></span> خرید سیپی (CP)`;
-                pageSubtitle.innerText = "شارژ سریع سیپی با نازل‌ترین قیمت";
-                container.className = "grid grid-cols-2 gap-4 sm:gap-6"; // ۲ محصول در هر ردیف
-            } else if (tab === 'gap') {
-                pageTitle.innerHTML = `<span class="w-3 h-8 bg-pink-500 rounded-full inline-block"></span> خدمات گپ و چنل`;
-                pageSubtitle.innerText = "اشتراک‌ها، تبلیغات و خدمات چنل‌ها";
-                container.className = "grid grid-cols-2 gap-4 sm:gap-6"; // ۲ محصول در هر ردیف
-            }
-
-            renderProducts();
-        }
-
-        // Profile Modal Logic
-        function toggleProfileModal() {
-            const modal = document.getElementById('profile-modal');
-            modal.classList.toggle('hidden');
-        }
-
-        // Cart Modal Logic
-        function toggleCartModal() {
-            const modal = document.getElementById('cart-modal');
-            modal.classList.toggle('hidden');
-            renderCartItems();
-        }
-
-        // Cart State Management
-        function addToCart(productId) {
-            const product = products.find(p => p.id === productId);
-            if (product) {
-                cart.push(product);
-                updateCartCount();
-                alert(`محصول "${product.title}" به سبد خرید اضافه شد.`);
-            }
-        }
-
-        function quickOrder(productId) {
-            addToCart(productId);
-            toggleCartModal();
-        }
-
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            updateCartCount();
-            renderCartItems();
-        }
-
-        function updateCartCount() {
-            document.getElementById('cart-count').innerText = cart.length;
-        }
-
-        function renderCartItems() {
-            const cartContainer = document.getElementById('cart-items');
-            const totalPriceEl = document.getElementById('cart-total-price');
-            cartContainer.innerHTML = '';
-
-            if (cart.length === 0) {
-                cartContainer.innerHTML = `
-                    <p class="text-center text-slate-500 py-8 text-sm">سبد خرید شما خالی است.</p>
-                `;
-                totalPriceEl.innerText = "۰ تومان";
-                return;
-            }
-
-            cart.forEach((item, index) => {
-                const itemEl = document.createElement('div');
-                itemEl.className = "bg-slate-800/80 p-3 rounded-xl flex items-center justify-between border border-slate-700/50";
-                itemEl.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <img src="${item.image}" class="w-12 h-12 rounded-lg object-cover">
-                        <div>
-                            <h4 class="text-xs sm:text-sm font-bold text-white">${item.title}</h4>
-                            <span class="text-xs text-amber-400 font-bold">${item.price} تومان</span>
-                        </div>
-                    </div>
-                    <button onclick="removeFromCart(${index})" class="text-rose-400 hover:text-rose-300 text-sm p-2">
-                        <i class="fa-solid fa-trash-can"></i>
-                    </button>
-                `;
-                cartContainer.appendChild(itemEl);
-            });
-
-            totalPriceEl.innerText = "محاسبه شده هنگام پرداخت";
-        }
-
-        function processOrder() {
-            if (cart.length === 0) {
-                alert("سبد خرید شما خالی است!");
-                return;
-            }
-            alert("سفارش شما با موفقیت ثبت شد! جهت تکمیل پردازش به پشتیبانی منتقل می‌شوید.");
-            cart = [];
-            updateCartCount();
-            toggleCartModal();
-        }
-
-        // Initialize App
-        window.onload = function() {
-            setActiveTab('all');
-        };
-    </script>
+    // بارگذاری اولیه صفحه اصلی و تنظیمات
+    window.onload = async () => {
+      await loadSettings();
+      // لود پیش‌فرض صفحه اصلی
+      const data = await fetchAPI('products/home');
+      allProductsData = data || {};
+      renderProducts();
+    };
+  </script>
 </body>
 </html>
+ 
