@@ -1,9 +1,10 @@
+```html
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>فروشگاه گیمینگ و خدمات آنلاین</title>
+    <title>مارول سیتی - فروشگاه گیمینگ و خدمات آنلاین</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome Icons -->
@@ -61,9 +62,37 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        /* Notification Toast Animations */
+        @keyframes toastIn {
+            from { transform: translate(-50%, -100%); opacity: 0; }
+            to { transform: translate(-50%, 0); opacity: 1; }
+        }
+        @keyframes toastOut {
+            from { transform: translate(-50%, 0); opacity: 1; }
+            to { transform: translate(-50%, -100%); opacity: 0; }
+        }
+        .animate-toast-in {
+            animation: toastIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        .animate-toast-out {
+            animation: toastOut 0.3s ease-in forwards;
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-purple-600 selection:text-white">
+<body class="min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-purple-600 selection:text-white relative">
+
+    <!-- NOTIFICATION TOAST -->
+    <div id="notification-toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 hidden max-w-sm w-11/12">
+        <div class="glass-card border border-emerald-500/50 bg-slate-900/95 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-xl">
+            <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-lg flex-shrink-0">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div class="flex-grow">
+                <h4 class="text-xs font-bold text-emerald-400">اعلان فروشگاه</h4>
+                <p id="toast-message" class="text-xs text-slate-200 mt-0.5 font-semibold">محصول با موفقیت به سبد خرید اضافه شد!</p>
+            </div>
+        </div>
+    </div>
 
     <!-- HEADER NAVIGATION -->
     <header class="sticky top-0 z-40 glass-card border-b border-slate-800 px-4 py-3 shadow-xl">
@@ -79,10 +108,10 @@
                 </button>
             </div>
 
-            <!-- Left Side: Brand Name -->
+            <!-- Left Side: Brand Name (Marvel City) -->
             <div class="flex items-center gap-3">
                 <span class="font-black text-xl bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">
-                    گیمینگ استور
+                    مارول سیتی
                 </span>
             </div>
 
@@ -146,14 +175,14 @@
                 </p>
             </div>
 
-            <!-- Support Box (Telegram icon removed) -->
+            <!-- Support Box -->
             <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white text-2xl shadow-lg shadow-cyan-500/30">
                         <i class="fa-solid fa-headset"></i>
                     </div>
                     <div>
-                        <h4 class="font-bold text-white text-base">پشتیبانی آنلاین</h4>
+                        <h4 class="font-bold text-white text-base">پشتیبانی آنلاین مارول سیتی</h4>
                         <p class="text-xs text-slate-400 mt-1">پاسخگویی سریع در کانال و پشتیبانی</p>
                     </div>
                 </div>
@@ -165,7 +194,7 @@
         </div>
         
         <div class="text-center text-xs text-slate-500 mt-8 pt-4 border-t border-slate-800">
-            تمامی حقوق محفوظ است © ۲۰۲۶ | طراحی شده بر اساس سفارش مشتری
+            تمامی حقوق محفوظ است © ۲۰۲۶ | مارول سیتی
         </div>
     </footer>
 
@@ -320,8 +349,84 @@
         let currentTab = 'home';
         let autoScrollInterval = null;
         let currentUser = null;
-        let currentAuthMode = 'login'; // 'login' or 'register'
+        let currentAuthMode = 'login';
         let cart = [];
+        let toastTimeout = null;
+
+        // HELPER: Price Formatter with (،)
+        function formatPrice(value) {
+            if (value === null || value === undefined || value === '') return '۰';
+            // Convert Persian/Arabic digits to English digits first if any
+            let str = value.toString().replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+            // Extract numeric digits
+            let numStr = str.replace(/[^0-9]/g, '');
+            if (!numStr) return '۰';
+            
+            // Format number with (،) comma
+            let formatted = parseInt(numStr, 10).toLocaleString('en-US').replace(/,/g, '،');
+            
+            // Convert back to Persian digits for clean look
+            const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+            return formatted.replace(/\d/g, x => persianDigits[x]);
+        }
+
+        // AUDIO NOTIFICATION (Web Audio API - Melodic Chime)
+        function playNotificationSound() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+
+                const now = ctx.currentTime;
+                
+                // Note 1 (High soft tone)
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(523.25, now); // C5
+                gain1.gain.setValueAtTime(0.15, now);
+                gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.start(now);
+                osc1.stop(now + 0.3);
+
+                // Note 2 (Brighter higher note)
+                const osc2 = ctx.createOscillator();
+                const gain2 = ctx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(783.99, now + 0.1); // G5
+                gain2.gain.setValueAtTime(0.2, now + 0.1);
+                gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.start(now + 0.1);
+                osc2.stop(now + 0.5);
+
+            } catch (e) {
+                console.log("Audio play blocked or unsupported:", e);
+            }
+        }
+
+        // TOAST NOTIFICATION SHOW
+        function showNotificationToast(msg) {
+            playNotificationSound();
+            const toast = document.getElementById('notification-toast');
+            const msgEl = document.getElementById('toast-message');
+            
+            msgEl.innerText = msg;
+            toast.classList.remove('hidden', 'animate-toast-out');
+            toast.classList.add('animate-toast-in');
+
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('animate-toast-in');
+                toast.classList.add('animate-toast-out');
+                setTimeout(() => {
+                    toast.classList.add('hidden');
+                }, 300);
+            }, 3000);
+        }
 
         // Auth State Management
         function checkUserSession() {
@@ -329,12 +434,15 @@
             if (saved) {
                 try {
                     currentUser = JSON.parse(saved);
+                    if (currentUser.cart && Array.isArray(currentUser.cart)) {
+                        cart = currentUser.cart;
+                    }
                     updateUserUI();
+                    updateCartUI();
                 } catch(e) {
                     currentUser = null;
                 }
             } else {
-                // Show register/login popup on initial visit
                 openAuthChoiceModal();
             }
         }
@@ -424,10 +532,16 @@
                 }
 
                 currentUser = data.user;
+                if (currentUser.cart && Array.isArray(currentUser.cart)) {
+                    cart = currentUser.cart;
+                } else {
+                    currentUser.cart = cart;
+                }
                 localStorage.setItem('app_user', JSON.stringify(currentUser));
                 updateUserUI();
+                updateCartUI();
                 closeAuthFormModal();
-                alert(data.message);
+                showNotificationToast(`خوش آمدید ${currentUser.username}`);
 
             } catch (err) {
                 showAuthAlert("خطا در برقراری ارتباط با سرور.");
@@ -449,7 +563,8 @@
                         username: currentUser.username,
                         password: currentUser.password,
                         newUsername,
-                        newPassword
+                        newPassword,
+                        cart: cart
                     })
                 });
 
@@ -478,12 +593,13 @@
 
         function logoutUser() {
             currentUser = null;
+            cart = [];
             localStorage.removeItem('app_user');
             updateUserUI();
+            updateCartUI();
             toggleProfileModal();
         }
 
-        // Cart & Order Requirements
         function requireAuthAction(callbackAction) {
             if (!currentUser) {
                 openAuthChoiceModal("برای ثبت سفارش یا افزودن به سبد خرید، اول باید ثبت نام کنید.");
@@ -492,12 +608,41 @@
             }
         }
 
+        // SYNC USER CART WITH FIREBASE & LOCALSTORAGE
+        async function syncCartWithFirebase() {
+            if (!currentUser) return;
+            currentUser.cart = cart;
+            localStorage.setItem('app_user', JSON.stringify(currentUser));
+
+            try {
+                await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'syncCart',
+                        username: currentUser.username,
+                        cart: cart
+                    })
+                });
+            } catch (err) {
+                console.error("خطا در ذخیره سبد خرید کاربر در فایربیس:", err);
+            }
+        }
+
         function addToCart(product) {
             requireAuthAction(() => {
                 cart.push(product);
                 updateCartUI();
-                alert(`محصول "${product.name || ''}" به سبد خرید اضافه شد.`);
+                syncCartWithFirebase();
+                showNotificationToast(`محصول "${product.name || ''}" به سبد خرید اضافه شد!`);
             });
+        }
+
+        // Helper to extract raw integer price from product object
+        function getProductRawPrice(item) {
+            let pStr = item.priceDiscount || item.priceSingle || item.priceMain || '0';
+            let numStr = pStr.toString().replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[^0-9]/g, '');
+            return parseInt(numStr, 10) || 0;
         }
 
         function updateCartUI() {
@@ -511,31 +656,38 @@
             }
 
             cartItemsContainer.innerHTML = '';
+            let totalPrice = 0;
+
             cart.forEach((item, index) => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = "bg-slate-800/80 p-3 rounded-xl border border-slate-700 flex items-center justify-between gap-3";
                 
-                const price = currentTab === 'home' ? (item.priceDiscount || item.priceMain || '0') : (item.priceSingle || '0');
+                const rawPrice = getProductRawPrice(item);
+                totalPrice += rawPrice;
 
                 itemDiv.innerHTML = `
                     <div class="flex items-center gap-3">
-                        <img src="${item.mainImg || ''}" class="w-12 h-12 object-cover rounded-lg">
+                        <img src="${item.mainImg || ''}" class="w-12 h-12 object-cover rounded-lg" onerror="this.src='https://placehold.co/100x100/1e293b/a855f7?text=Product'">
                         <div>
                             <h4 class="text-sm font-bold text-white">${item.name || ''}</h4>
-                            <p class="text-xs text-amber-400 font-semibold">${price} تومان</p>
+                            <p class="text-xs text-amber-400 font-semibold">${formatPrice(rawPrice)} تومان</p>
                         </div>
                     </div>
-                    <button onclick="removeFromCart(${index})" class="text-rose-400 hover:text-rose-300 text-sm p-1">
+                    <button onclick="removeFromCart(${index})" class="text-rose-400 hover:text-rose-300 text-sm p-1 transition">
                         <i class="fa-solid fa-trash"></i>
                     </button>
                 `;
                 cartItemsContainer.appendChild(itemDiv);
             });
+
+            // Display formatted total price
+            document.getElementById('cart-total-price').innerText = `${formatPrice(totalPrice)} تومان`;
         }
 
         function removeFromCart(index) {
             cart.splice(index, 1);
             updateCartUI();
+            syncCartWithFirebase();
         }
 
         async function fetchSiteData() {
@@ -597,14 +749,14 @@
                 if (currentTab === 'home') {
                     priceHTML = `
                         <div class="flex items-center gap-2">
-                            <span class="text-xs text-slate-500 line-through">${product.priceMain || ''} تومان</span>
-                            <span class="text-lg sm:text-xl font-extrabold text-amber-400">${product.priceDiscount || ''} تومان</span>
+                            <span class="text-xs text-slate-500 line-through">${formatPrice(product.priceMain)} تومان</span>
+                            <span class="text-lg sm:text-xl font-extrabold text-amber-400">${formatPrice(product.priceDiscount)} تومان</span>
                         </div>
                     `;
                 } else {
                     priceHTML = `
                         <div class="flex items-center gap-2">
-                            <span class="text-sm sm:text-base font-extrabold text-amber-400">${product.priceSingle || ''} تومان</span>
+                            <span class="text-sm sm:text-base font-extrabold text-amber-400">${formatPrice(product.priceSingle)} تومان</span>
                         </div>
                     `;
                 }
@@ -612,7 +764,7 @@
                 card.innerHTML = `
                     <div>
                         <div class="relative h-44 sm:h-48 overflow-hidden">
-                            <img src="${product.mainImg || ''}" alt="${product.name || ''}" class="w-full h-full object-cover">
+                            <img src="${product.mainImg || ''}" alt="${product.name || ''}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x300/1e293b/a855f7?text=Marvel+City'">
                             ${product.tag ? `<span class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-purple-600/90 text-white text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full shadow-md">${product.tag}</span>` : ''}
                         </div>
                         <div class="p-4 sm:p-5">
@@ -640,7 +792,7 @@
             if (product.extraImgs) {
                 const imgsArray = Array.isArray(product.extraImgs) ? product.extraImgs : Object.values(product.extraImgs);
                 if (imgsArray.length > 0) {
-                    let slides = imgsArray.map(img => `<img src="${img}" class="w-40 h-28 object-cover rounded-xl border border-slate-700 flex-shrink-0">`).join('');
+                    let slides = imgsArray.map(img => `<img src="${img}" class="w-40 h-28 object-cover rounded-xl border border-slate-700 flex-shrink-0" onerror="this.src='https://placehold.co/200x150/1e293b/a855f7?text=Marvel+City'">`).join('');
                     extraImagesHTML = `
                         <div class="mt-4">
                             <label class="block text-xs font-semibold text-slate-400 mb-2">تصاویر بیشتر (اسکرول افقی)</label>
@@ -656,20 +808,20 @@
             if (currentTab === 'home') {
                 priceDisplayHTML = `
                     <div class="flex items-center gap-3">
-                        <span class="text-sm text-slate-500 line-through">${product.priceMain || ''} تومان</span>
-                        <span class="text-xl font-extrabold text-amber-400">${product.priceDiscount || ''} تومان</span>
+                        <span class="text-sm text-slate-500 line-through">${formatPrice(product.priceMain)} تومان</span>
+                        <span class="text-xl font-extrabold text-amber-400">${formatPrice(product.priceDiscount)} تومان</span>
                     </div>
                 `;
             } else {
                 priceDisplayHTML = `
-                    <span class="text-lg font-extrabold text-amber-400">${product.priceSingle || ''} تومان</span>
+                    <span class="text-lg font-extrabold text-amber-400">${formatPrice(product.priceSingle)} تومان</span>
                 `;
             }
 
             modalContent.innerHTML = `
                 <div class="space-y-4">
                     <div class="relative h-56 rounded-2xl overflow-hidden border border-slate-700">
-                        <img src="${product.mainImg || ''}" class="w-full h-full object-cover">
+                        <img src="${product.mainImg || ''}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/600x400/1e293b/a855f7?text=Marvel+City'">
                         ${product.tag ? `<span class="absolute top-3 right-3 bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full">${product.tag}</span>` : ''}
                     </div>
                     <div>
@@ -797,4 +949,4 @@
     </script>
 </body>
 </html>
- 
+``` 
