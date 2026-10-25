@@ -3,7 +3,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
 
-  const { action, username, password, newUsername, newPassword, cart } = req.body;
+  const { action, username, password, newUsername, newPassword } = req.body;
   const dbUrl = "https://freedom-mfe-default-rtdb.asia-southeast1.firebasedatabase.app";
 
   try {
@@ -11,6 +11,7 @@ export default async function handler(req, res) {
     if (action === 'register') {
       const cleanUser = username.trim().toLowerCase();
 
+      // اعتبارسنجی طول و کاراکترها
       if (cleanUser.length <= 4 || password.length <= 4) {
         return res.status(400).json({ message: 'نام کاربری و رمز عبور باید بیشتر از ۴ حرف باشند.' });
       }
@@ -19,6 +20,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ message: 'نام کاربری باید شامل حروف انگلیسی باشد.' });
       }
 
+      // بررسی تکراری نبودن نام کاربری
       const userCheckRes = await fetch(`${dbUrl}/users/${cleanUser}.json`);
       const existingUser = await userCheckRes.json();
 
@@ -26,8 +28,8 @@ export default async function handler(req, res) {
         return res.status(400).json({ message: 'این نام کاربری قبلاً ثبت شده است. لطفاً نام دیگری انتخاب کنید.' });
       }
 
-      // ذخیره کاربر جدید به همراه سبد خرید خالی اولیه
-      const userData = { username: cleanUser, password: password, createdAt: new Date().toISOString(), cart: [] };
+      // ذخیره کاربر جدید
+      const userData = { username: cleanUser, password: password, createdAt: new Date().toISOString() };
       await fetch(`${dbUrl}/users/${cleanUser}.json`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -67,28 +69,19 @@ export default async function handler(req, res) {
         return res.status(400).json({ message: 'نام کاربری باید شامل حروف انگلیسی باشد.' });
       }
 
-      // گرفتن اطلاعات قبلی کاربر (برای حفظ سبد خرید هنگام تغییر نام کاربری)
-      const oldUserRes = await fetch(`${dbUrl}/users/${oldCleanUser}.json`);
-      const oldUserData = await oldUserRes.json();
-      const currentCart = oldUserData ? (oldUserData.cart || []) : [];
-
+      // اگر نام کاربری تغییر کرده باشد، بررسی تکراری نبودن نام جدید
       if (newCleanUser !== oldCleanUser) {
         const checkRes = await fetch(`${dbUrl}/users/${newCleanUser}.json`);
         const exist = await checkRes.json();
         if (exist) {
           return res.status(400).json({ message: 'این نام کاربری جدید قبلاً توسط شخص دیگری ثبت شده است.' });
         }
+        // حذف رکورد قبلی
         await fetch(`${dbUrl}/users/${oldCleanUser}.json`, { method: 'DELETE' });
       }
 
-      // ثبت اطلاعات جدید همراه با سبد خرید قبلی
-      const updatedData = { 
-        username: newCleanUser, 
-        password: newPassword, 
-        updatedAt: new Date().toISOString(),
-        cart: currentCart
-      };
-      
+      // ثبت اطلاعات جدید
+      const updatedData = { username: newCleanUser, password: newPassword, updatedAt: new Date().toISOString() };
       await fetch(`${dbUrl}/users/${newCleanUser}.json`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -96,23 +89,6 @@ export default async function handler(req, res) {
       });
 
       return res.status(200).json({ success: true, message: 'اطلاعات با موفقیت به‌روزرسانی شد.', user: updatedData });
-    }
-
-    // 4. ذخیره و به‌روزرسانی سبد خرید کاربر در فایربیس (جدید)
-    if (action === 'update_cart') {
-      if (!username) {
-        return res.status(400).json({ message: 'نام کاربری مشخص نشده است.' });
-      }
-      const cleanUser = username.trim().toLowerCase();
-
-      // ذخیره سبد خرید به صورت مستقیم زیر شاخه کاربر در فایربیس
-      await fetch(`${dbUrl}/users/${cleanUser}/cart.json`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(cart || [])
-      });
-
-      return res.status(200).json({ success: true, message: 'سبد خرید در فایربیس به‌روز شد.' });
     }
 
     return res.status(400).json({ message: 'عملیات نامعتبر است.' });
