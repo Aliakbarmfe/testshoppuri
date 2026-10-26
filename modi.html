@@ -25,32 +25,66 @@
         <span class="text-xs bg-amber-500/20 text-amber-400 border border-amber-500/30 px-3 py-1.5 rounded-xl font-bold">دسترسی مدیر</span>
     </header>
 
-    <!-- MAIN CHAT PANEL -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-grow">
-        
-        <!-- USERS LIST -->
-        <div class="glass-card rounded-2xl p-4 flex flex-col">
+    <!-- MAIN CHAT PANEL (USERS LIST ONLY) -->
+    <div class="flex flex-col flex-grow max-w-xl mx-auto w-full">
+        <div class="glass-card rounded-2xl p-4 flex flex-col flex-grow">
             <h3 class="font-bold text-slate-300 text-sm mb-3 pb-2 border-b border-slate-800 flex items-center gap-2">
                 <i class="fa-solid fa-users text-purple-400"></i> لیست پیام‌های کاربران
             </h3>
-            <div id="users-list" class="space-y-2 overflow-y-auto flex-grow max-h-[70vh]">
+            <div id="users-list" class="space-y-2 overflow-y-auto flex-grow max-h-[75vh]">
                 <p class="text-center text-slate-500 text-xs py-8">در حال دریافت کاربران...</p>
             </div>
         </div>
+    </div>
 
-        <!-- PV CHAT WINDOW -->
-        <div class="md:col-span-2 glass-card rounded-2xl p-4 flex flex-col justify-between min-h-[450px]">
-            <div id="chat-header" class="pb-3 border-b border-slate-800">
-                <h4 class="font-bold text-white text-sm" id="active-user-title">یک کاربر را از لیست سمت راست انتخاب کنید</h4>
+    <!-- CHAT POPUP MODAL (80% of screen) -->
+    <div id="chat-modal" class="fixed inset-0 z-40 bg-black/80 hidden flex items-center justify-center p-4">
+        <div class="glass-card rounded-2xl w-full max-w-2xl h-[80vh] flex flex-col justify-between p-4 relative shadow-2xl border border-slate-700">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <h4 class="font-bold text-white text-sm" id="active-user-title">پی‌وی کاربر</h4>
+                <button onclick="closeChatModal()" class="w-8 h-8 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
             </div>
 
-            <div id="admin-chat-messages" class="flex-grow overflow-y-auto space-y-3 my-4 pr-1 max-h-[55vh]">
+            <!-- Messages Container -->
+            <div id="admin-chat-messages" class="flex-grow overflow-y-auto space-y-3 my-4 pr-1">
                 <p class="text-center text-slate-500 text-xs py-12">پیامی انتخاب نشده است.</p>
             </div>
 
+            <!-- IMAGE PREVIEW CONTAINER -->
+            <div id="image-preview-container" class="hidden mb-3 p-3 bg-slate-800/90 rounded-xl border border-slate-700 flex flex-col gap-2">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs text-amber-400 font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-image"></i> پیش‌نمایش تصویر
+                    </span>
+                    <span id="image-size-label" class="text-[11px] text-slate-400"></span>
+                </div>
+                <div class="relative flex justify-center">
+                    <img id="preview-img-tag" src="" alt="پیش‌نمایش" class="max-h-40 rounded-xl object-contain border border-slate-700">
+                </div>
+                <!-- Upload Progress Animation -->
+                <div id="upload-progress-wrapper" class="hidden flex flex-col gap-1 mt-1">
+                    <div class="flex justify-between text-[10px] text-slate-300">
+                        <span id="upload-status-text">در حال ارسال...</span>
+                        <span id="upload-percent">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+                        <div id="upload-progress-bar" class="bg-amber-500 h-full w-0 transition-all duration-150"></div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-end gap-2 mt-1" id="preview-actions">
+                    <button type="button" onclick="cancelImagePreview()" class="px-3 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs transition">انصراف</button>
+                    <button type="button" onclick="confirmAndSendImage()" class="px-4 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition flex items-center gap-1">
+                        <i class="fa-solid fa-paper-plane"></i> ارسال عکس
+                    </button>
+                </div>
+            </div>
+
             <!-- REPLY FORM -->
-            <form id="reply-form" onsubmit="sendAdminReply(event)" class="pt-3 border-t border-slate-800 flex items-center gap-2 hidden">
-                <input type="file" id="admin-image-input" accept="image/*" class="hidden" onchange="handleAdminImageUpload(event)">
+            <form id="reply-form" onsubmit="sendAdminReply(event)" class="pt-3 border-t border-slate-800 flex items-center gap-2">
+                <input type="file" id="admin-image-input" accept="image/*" class="hidden" onchange="handleAdminImageSelect(event)">
                 <button type="button" onclick="document.getElementById('admin-image-input').click()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 p-3 rounded-xl transition flex items-center justify-center" title="ارسال عکس">
                     <i class="fa-solid fa-image text-lg"></i>
                 </button>
@@ -60,7 +94,6 @@
                 </button>
             </form>
         </div>
-
     </div>
 
     <!-- IMAGE MODAL (LIGHTBOX) -->
@@ -78,6 +111,8 @@
 
     <script>
         let selectedUser = null;
+        let pendingImageFile = null;
+        let pendingImageBase64 = null;
 
         async function loadUsersList() {
             try {
@@ -86,17 +121,29 @@
                 const container = document.getElementById('users-list');
 
                 if (data.users && data.users.length > 0) {
+                    // Sort users by newest message time first
+                    data.users.sort((a, b) => new Date(b.lastTime || 0) - new Date(a.lastTime || 0));
+
                     container.innerHTML = '';
                     data.users.forEach(user => {
                         const div = document.createElement('div');
                         div.className = `p-3 rounded-xl bg-slate-800/80 hover:bg-purple-600/30 border border-slate-700/60 cursor-pointer transition flex items-center justify-between ${selectedUser === user.username ? 'border-purple-500 bg-purple-600/20' : ''}`;
                         div.onclick = () => openUserChat(user.username);
+                        
+                        // Unread messages badge
+                        const unreadBadge = (user.unreadCount && user.unreadCount > 0) 
+                            ? `<span class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">${user.unreadCount}</span>` 
+                            : '';
+
                         div.innerHTML = `
                             <div>
                                 <h5 class="font-bold text-xs text-white">${user.username}</h5>
-                                <p class="text-[11px] text-slate-400 truncate max-w-[150px] mt-0.5">${user.lastMessage || '...'}</p>
+                                <p class="text-[11px] text-slate-400 truncate max-w-[180px] mt-0.5">${user.lastMessage || '...'}</p>
                             </div>
-                            <span class="text-[9px] text-slate-500">${user.lastTime || ''}</span>
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="text-[9px] text-slate-500">${user.lastTime || ''}</span>
+                                ${unreadBadge}
+                            </div>
                         `;
                         container.appendChild(div);
                     });
@@ -111,9 +158,21 @@
         async function openUserChat(username) {
             selectedUser = username;
             document.getElementById('active-user-title').innerText = `پی‌وی کاربر: ${username}`;
-            document.getElementById('reply-form').classList.remove('hidden');
+            document.getElementById('chat-modal').classList.remove('hidden');
+            
+            // Clear unread count locally when opened
+            try {
+                await fetch(`/api/chat?action=mark_read&username=${username}`);
+            } catch (e) {}
+
             loadUsersList();
             loadAdminChatMessages();
+        }
+
+        function closeChatModal() {
+            document.getElementById('chat-modal').classList.add('hidden');
+            selectedUser = null;
+            cancelImagePreview();
         }
 
         async function loadAdminChatMessages() {
@@ -174,65 +233,117 @@
                     })
                 });
                 loadAdminChatMessages();
+                loadUsersList();
             } catch (err) {
                 alert("خطا در ارسال پاسخ.");
             }
         }
 
-        async function handleAdminImageUpload(e) {
+        function handleAdminImageSelect(e) {
             const file = e.target.files[0];
             if (!file || !selectedUser) return;
 
             if (file.size > 5 * 1024 * 1024) {
                 alert("حجم عکس نباید بیشتر از ۵ مگابایت باشد.");
+                e.target.value = '';
                 return;
             }
 
+            pendingImageFile = file;
+
+            // Calculate and display file size
+            let sizeStr = '';
+            if (file.size < 1024 * 1024) {
+                sizeStr = (file.size / 1024).toFixed(1) + ' کیلوبایت';
+            } else {
+                sizeStr = (file.size / (1024 * 1024)).toFixed(1) + ' مگابایت';
+            }
+
             const reader = new FileReader();
-            reader.onload = async function(uploadEvent) {
-                const base64Image = uploadEvent.target.result;
+            reader.onload = function(uploadEvent) {
+                pendingImageBase64 = uploadEvent.target.result;
+                document.getElementById('preview-img-tag').src = pendingImageBase64;
+                document.getElementById('image-size-label').innerText = `حجم عکس: ${sizeStr}`;
                 
-                const container = document.getElementById('admin-chat-messages');
-                const loadingDiv = document.createElement('div');
-                loadingDiv.id = 'admin-uploading-indicator';
-                loadingDiv.className = 'flex flex-col items-start';
-                loadingDiv.innerHTML = `<div class="bg-slate-800 text-amber-400 p-3 rounded-2xl text-xs flex items-center gap-2"><i class="fa-solid fa-spinner fa-spin"></i> در حال آپلود و ارسال عکس...</div>`;
-                container.appendChild(loadingDiv);
-                container.scrollTop = container.scrollHeight;
-
-                try {
-                    const uploadRes = await fetch('/api/upload', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ image: base64Image })
-                    });
-                    const uploadData = await uploadRes.json();
-
-                    if (!uploadData.success) {
-                        throw new Error(uploadData.error || 'خطا در آپلود عکس');
-                    }
-
-                    await fetch('/api/chat', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            username: selectedUser,
-                            text: '',
-                            imageUrl: uploadData.url,
-                            sender: 'admin'
-                        })
-                    });
-
-                    document.getElementById('admin-uploading-indicator')?.remove();
-                    e.target.value = '';
-                    loadAdminChatMessages();
-                } catch (err) {
-                    document.getElementById('admin-uploading-indicator')?.remove();
-                    alert("خطا در ارسال عکس: " + err.message);
-                    e.target.value = '';
-                }
+                // Reset states
+                document.getElementById('upload-progress-wrapper').classList.add('hidden');
+                document.getElementById('upload-progress-bar').style.width = '0%';
+                document.getElementById('upload-percent').innerText = '0%';
+                document.getElementById('preview-actions').classList.remove('hidden');
+                
+                // Show preview box
+                document.getElementById('image-preview-container').classList.remove('hidden');
             };
             reader.readAsDataURL(file);
+        }
+
+        function cancelImagePreview() {
+            pendingImageFile = null;
+            pendingImageBase64 = null;
+            document.getElementById('image-preview-container').classList.add('hidden');
+            document.getElementById('admin-image-input').value = '';
+        }
+
+        async function confirmAndSendImage() {
+            if (!pendingImageBase64 || !selectedUser) return;
+
+            document.getElementById('preview-actions').classList.add('hidden');
+            const progressWrapper = document.getElementById('upload-progress-wrapper');
+            progressWrapper.classList.remove('hidden');
+            const progressBar = document.getElementById('upload-progress-bar');
+            const percentText = document.getElementById('upload-percent');
+            const statusText = document.getElementById('upload-status-text');
+
+            // Simulate progress animation smoothly
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 12;
+                if (progress > 90) progress = 90;
+                progressBar.style.width = progress + '%';
+                percentText.innerText = progress + '%';
+            }, 100);
+
+            try {
+                statusText.innerText = 'در حال آپلود و ارسال...';
+                const uploadRes = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: pendingImageBase64 })
+                });
+                const uploadData = await uploadRes.json();
+
+                if (!uploadData.success) {
+                    throw new Error(uploadData.error || 'خطا در آپلود عکس');
+                }
+
+                clearInterval(interval);
+                progressBar.style.width = '100%';
+                percentText.innerText = '100%';
+                statusText.innerText = 'ارسال شد!';
+
+                await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: selectedUser,
+                        text: '',
+                        imageUrl: uploadData.url,
+                        sender: 'admin'
+                    })
+                });
+
+                setTimeout(() => {
+                    cancelImagePreview();
+                    loadAdminChatMessages();
+                    loadUsersList();
+                }, 400);
+
+            } catch (err) {
+                clearInterval(interval);
+                alert("خطا در ارسال عکس: " + err.message);
+                document.getElementById('preview-actions').classList.remove('hidden');
+                progressWrapper.classList.add('hidden');
+            }
         }
 
         function openImageModal(url) {
