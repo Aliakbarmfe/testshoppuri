@@ -61,7 +61,6 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
-        /* Notification Toast Animations */
         @keyframes toastIn {
             from { transform: translate(-50%, -100%); opacity: 0; }
             to { transform: translate(-50%, 0); opacity: 1; }
@@ -102,8 +101,6 @@
     <!-- HEADER NAVIGATION -->
     <header class="sticky top-0 z-40 glass-card border-b border-slate-800 px-4 py-3 shadow-xl">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
-            
-            <!-- Right Side: Account Button / User Profile -->
             <div class="flex items-center gap-3">
                 <button onclick="handleProfileHeaderClick()" class="flex items-center gap-2 bg-slate-800/80 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 hover:border-purple-500 px-3 py-2 rounded-xl transition duration-300 group">
                     <div class="w-8 h-8 rounded-full bg-purple-600/40 flex items-center justify-center text-purple-200 group-hover:bg-purple-500 group-hover:text-white transition">
@@ -112,17 +109,13 @@
                     <span id="user-display-name" class="text-xs sm:text-sm font-semibold">حساب کاربری / ثبت نام</span>
                 </button>
             </div>
-
-            <!-- Left Side: Brand Name (Marvel City) -->
             <div class="flex items-center gap-3">
                 <span class="font-black text-xl bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">
                     مارول سیتی
                 </span>
             </div>
-
         </div>
 
-        <!-- Category Menu Bars -->
         <div class="max-w-7xl mx-auto mt-3 pt-2 border-t border-slate-800/60">
             <nav class="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto no-scrollbar pb-1">
                 <button onclick="setActiveTab('home')" id="tab-home" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-600/30">
@@ -152,7 +145,6 @@
                 <p id="page-subtitle" class="text-xs sm:text-sm text-slate-400 mt-1">تخفیف‌های داغ و محدود تمامی بخش‌ها</p>
             </div>
             
-            <!-- Shopping Cart Quick Button -->
             <button onclick="toggleCartModal()" class="relative bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold px-4 py-2 rounded-xl shadow-lg shadow-amber-500/20 flex items-center gap-2 transition">
                 <i class="fa-solid fa-cart-shopping"></i>
                 <span class="hidden sm:inline">سبد خرید</span>
@@ -160,17 +152,12 @@
             </button>
         </div>
 
-        <!-- PRODUCTS GRID -->
-        <div id="products-container" class="grid grid-cols-1 gap-4 sm:gap-6">
-            <!-- Dynamic Content Loaded from Firebase -->
-        </div>
+        <div id="products-container" class="grid grid-cols-1 gap-4 sm:gap-6"></div>
     </main>
 
     <!-- FOOTER SECTION -->
     <footer class="glass-card border-t border-slate-800 mt-12 py-8 px-4">
         <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-            
-            <!-- Left Side: About Website & Support -->
             <div class="space-y-3">
                 <h3 class="text-lg font-bold text-purple-400 flex items-center gap-2">
                     <i class="fa-solid fa-circle-info"></i> درباره سایت ما
@@ -180,7 +167,6 @@
                 </p>
             </div>
 
-            <!-- Support Box -->
             <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div class="flex items-center gap-4">
                     <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white text-2xl shadow-lg shadow-cyan-500/30">
@@ -195,7 +181,6 @@
                     ورود به کانال
                 </a>
             </div>
-
         </div>
         
         <div class="text-center text-xs text-slate-500 mt-8 pt-4 border-t border-slate-800">
@@ -226,17 +211,14 @@
         </div>
     </div>
 
-    <!-- FORM AUTH MODAL (LOGIN / REGISTER) -->
+    <!-- FORM AUTH MODAL -->
     <div id="auth-form-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-purple-500/30 w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
             <button onclick="closeAuthFormModal()" class="absolute top-4 left-4 text-slate-400 hover:text-white text-lg w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center">
                 <i class="fa-solid fa-xmark"></i>
             </button>
-            
             <h3 id="auth-form-title" class="text-xl font-bold text-white mb-4">ثبت نام</h3>
-            
             <div id="auth-alert" class="hidden text-xs p-3 rounded-xl mb-4"></div>
-
             <form id="auth-form" onsubmit="handleAuthSubmit(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1">نام کاربری (حروف انگلیسی، بیش از ۴ حرف)</label>
@@ -246,7 +228,6 @@
                     <label class="block text-xs font-semibold text-slate-400 mb-1">رمز عبور (بیش از ۴ حرف)</label>
                     <input type="password" id="auth-password" required dir="ltr" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-purple-500">
                 </div>
-
                 <div class="pt-2 flex gap-3">
                     <button type="submit" id="auth-submit-btn" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 rounded-xl text-sm transition">
                         تایید
@@ -274,9 +255,7 @@
                     <p class="text-xs text-purple-400">مشاهده و ویرایش مشخصات اکانت</p>
                 </div>
             </div>
-
             <div id="profile-alert" class="hidden text-xs p-3 rounded-xl mb-4"></div>
-
             <form onsubmit="handleProfileUpdate(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1">نام کاربری جدید</label>
@@ -286,7 +265,6 @@
                     <label class="block text-xs font-semibold text-slate-400 mb-1">رمز عبور جدید</label>
                     <input type="text" id="edit-password" required dir="ltr" class="w-full bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-3 py-2.5 focus:outline-none focus:border-purple-500">
                 </div>
-
                 <div class="pt-2 flex gap-3">
                     <button type="submit" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 rounded-xl text-sm transition">
                         ذخیره تغییرات
@@ -302,15 +280,10 @@
     <!-- PRODUCT DETAILS MODAL -->
     <div id="product-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-purple-500/30 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            
             <button onclick="toggleProductModal()" class="absolute top-4 left-4 text-slate-400 hover:text-white text-lg w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center z-10">
                 <i class="fa-solid fa-xmark"></i>
             </button>
-
-            <div id="modal-content">
-                <!-- Dynamic Product Details -->
-            </div>
-
+            <div id="modal-content"></div>
         </div>
     </div>
 
@@ -334,7 +307,7 @@
                     <span>مبلغ قابل پرداخت:</span>
                     <span id="cart-total-price" class="text-lg text-amber-400">۰ تومان</span>
                 </div>
-                <button onclick="alert('بخش خرید نهایی به‌زودی تکمیل می‌شود.')" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-slate-950 font-black py-3 rounded-xl text-base">
+                <button onclick="finalizeOrder()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black py-3 rounded-xl text-base transition shadow-lg shadow-emerald-500/20">
                     ثبت نهایی سفارش
                 </button>
             </div>
@@ -358,7 +331,6 @@
         let cart = [];
         let toastTimeout = null;
 
-        // SUPPORT NAVIGATION FUNCTION
         function goToSupportPage() {
             if (!currentUser) {
                 openAuthChoiceModal("برای استفاده از پشتیبانی، باید ابتدا وارد حساب کاربری خود شوید یا ثبت‌نام کنید.");
@@ -367,25 +339,35 @@
             }
         }
 
-        // HELPER: Price Formatter with (،)
+        // Finalize order and redirect to support page with cart items
+        function finalizeOrder() {
+            if (!currentUser) {
+                openAuthChoiceModal("برای ثبت نهایی سفارش باید وارد حساب کاربری خود شوید.");
+                return;
+            }
+            if (cart.length === 0) {
+                showNotificationToast("سبد خرید شما خالی است!");
+                return;
+            }
+            localStorage.setItem('pending_order', JSON.stringify(cart));
+            window.location.href = "posht.html";
+        }
+
         function formatPrice(value) {
             if (value === null || value === undefined || value === '') return '۰';
             let str = value.toString().replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
             let numStr = str.replace(/[^0-9]/g, '');
             if (!numStr) return '۰';
-            
             let formatted = parseInt(numStr, 10).toLocaleString('en-US').replace(/,/g, '،');
             const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
             return formatted.replace(/\d/g, x => persianDigits[x]);
         }
 
-        // AUDIO NOTIFICATION (Web Audio API - Melodic Chime)
         function playNotificationSound() {
             try {
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 if (!AudioContext) return;
                 const ctx = new AudioContext();
-
                 const now = ctx.currentTime;
                 
                 const osc1 = ctx.createOscillator();
@@ -409,18 +391,13 @@
                 gain2.connect(ctx.destination);
                 osc2.start(now + 0.1);
                 osc2.stop(now + 0.5);
-
-            } catch (e) {
-                console.log("Audio play blocked or unsupported:", e);
-            }
+            } catch (e) {}
         }
 
-        // TOAST NOTIFICATION SHOW
         function showNotificationToast(msg) {
             playNotificationSound();
             const toast = document.getElementById('notification-toast');
             const msgEl = document.getElementById('toast-message');
-            
             msgEl.innerText = msg;
             toast.classList.remove('hidden', 'animate-toast-out');
             toast.classList.add('animate-toast-in');
@@ -429,13 +406,10 @@
             toastTimeout = setTimeout(() => {
                 toast.classList.remove('animate-toast-in');
                 toast.classList.add('animate-toast-out');
-                setTimeout(() => {
-                    toast.classList.add('hidden');
-                }, 300);
+                setTimeout(() => { toast.classList.add('hidden'); }, 300);
             }, 3000);
         }
 
-        // Auth State Management
         function checkUserSession() {
             const saved = localStorage.getItem('app_user');
             if (saved) {
@@ -446,9 +420,7 @@
                     }
                     updateUserUI();
                     updateCartUI();
-                } catch(e) {
-                    currentUser = null;
-                }
+                } catch(e) { currentUser = null; }
             } else {
                 openAuthChoiceModal();
             }
@@ -521,7 +493,6 @@
             e.preventDefault();
             const username = document.getElementById('auth-username').value;
             const password = document.getElementById('auth-password').value;
-
             hideAuthAlert();
 
             try {
@@ -530,14 +501,11 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: currentAuthMode, username, password })
                 });
-
                 const data = await res.json();
-
                 if (!res.ok) {
                     showAuthAlert(data.message || 'خطایی رخ داد.');
                     return;
                 }
-
                 currentUser = data.user;
                 if (currentUser.cart && Array.isArray(currentUser.cart)) {
                     cart = currentUser.cart;
@@ -549,7 +517,6 @@
                 updateCartUI();
                 closeAuthFormModal();
                 showNotificationToast(`خوش آمدید ${currentUser.username}`);
-
             } catch (err) {
                 showAuthAlert("خطا در برقراری ارتباط با سرور.");
             }
@@ -574,23 +541,19 @@
                         cart: cart
                     })
                 });
-
                 const data = await res.json();
-
                 if (!res.ok) {
                     pAlert.className = "text-xs p-3 rounded-xl mb-4 bg-rose-500/20 text-rose-300 border border-rose-500/30";
                     pAlert.innerText = data.message || "خطا در به‌روزرسانی";
                     pAlert.classList.remove('hidden');
                     return;
                 }
-
                 currentUser = data.user;
                 localStorage.setItem('app_user', JSON.stringify(currentUser));
                 updateUserUI();
                 pAlert.className = "text-xs p-3 rounded-xl mb-4 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
                 pAlert.innerText = "اطلاعات با موفقیت ویرایش شد.";
                 pAlert.classList.remove('hidden');
-
             } catch (err) {
                 pAlert.className = "text-xs p-3 rounded-xl mb-4 bg-rose-500/20 text-rose-300 border border-rose-500/30";
                 pAlert.innerText = "خطا در برقراری ارتباط با سرور.";
@@ -619,20 +582,13 @@
             if (!currentUser) return;
             currentUser.cart = cart;
             localStorage.setItem('app_user', JSON.stringify(currentUser));
-
             try {
                 await fetch('/api/auth', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'syncCart',
-                        username: currentUser.username,
-                        cart: cart
-                    })
+                    body: JSON.stringify({ action: 'syncCart', username: currentUser.username, cart: cart })
                 });
-            } catch (err) {
-                console.error("خطا در ذخیره سبد خرید کاربر در فایربیس:", err);
-            }
+            } catch (err) {}
         }
 
         function addToCart(product) {
@@ -666,7 +622,6 @@
             cart.forEach((item, index) => {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = "bg-slate-800/80 p-3 rounded-xl border border-slate-700 flex items-center justify-between gap-3";
-                
                 const rawPrice = getProductRawPrice(item);
                 totalPrice += rawPrice;
 
@@ -699,7 +654,6 @@
                 const response = await fetch('/api/data');
                 const data = await response.json();
                 globalData = data;
-
                 if (globalData.settings) {
                     if (globalData.settings.siteDescription) {
                         document.getElementById('footer-description').innerText = globalData.settings.siteDescription;
@@ -708,14 +662,12 @@
                         document.getElementById('channel-link-btn').href = globalData.settings.channelLink;
                     }
                 }
-
                 renderProducts();
             } catch (error) {
-                console.error("خطا در بارگذاری اطلاعات:", error);
                 document.getElementById('products-container').innerHTML = `
                     <div class="col-span-full text-center py-12 text-rose-400">
                         <i class="fa-solid fa-triangle-exclamation text-4xl mb-3"></i>
-                        <p>خطا در برقراری ارتباط با سرور فایربیس از طریق Vercel.</p>
+                        <p>خطا در برقراری ارتباط با سرور.</p>
                     </div>
                 `;
             }
@@ -729,7 +681,6 @@
         function renderProducts() {
             const container = document.getElementById('products-container');
             container.innerHTML = '';
-
             const productsObj = globalData.products && globalData.products[currentTab] ? globalData.products[currentTab] : {};
             const productKeys = Object.keys(productsObj);
 
@@ -791,7 +742,6 @@
 
         function openProductDetails(product) {
             const modalContent = document.getElementById('modal-content');
-            
             let extraImagesHTML = '';
             if (product.extraImgs) {
                 const imgsArray = Array.isArray(product.extraImgs) ? product.extraImgs : Object.values(product.extraImgs);
@@ -832,14 +782,11 @@
                         <h2 class="text-xl font-bold text-white mb-2">${product.name || ''}</h2>
                         ${priceDisplayHTML}
                     </div>
-                    
                     ${extraImagesHTML}
-
                     <div>
                         <label class="block text-xs font-semibold text-slate-400 mb-1">توضیحات</label>
                         <p class="text-sm text-slate-300 bg-slate-800/60 p-3 rounded-xl border border-slate-700/50 leading-relaxed">${product.desc || 'توضیحاتی موجود نیست.'}</p>
                     </div>
-
                     <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 space-y-2">
                         <div class="flex justify-between text-xs sm:text-sm">
                             <span class="text-slate-400">شماره کارت:</span>
@@ -850,7 +797,6 @@
                             <span class="text-white font-bold">${product.cardName || 'مشخص نشده'}</span>
                         </div>
                     </div>
-
                     <div class="flex gap-3 pt-2">
                         <button id="modal-add-btn" class="flex-1 bg-slate-800 hover:bg-slate-700 text-purple-300 font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2 transition">
                             <i class="fa-solid fa-cart-plus"></i> افزودن به سبد خرید
@@ -863,7 +809,6 @@
             `;
 
             toggleProductModal();
-
             document.getElementById('modal-add-btn').onclick = () => addToCart(product);
             document.getElementById('modal-order-btn').onclick = () => {
                 requireAuthAction(() => {
@@ -872,7 +817,6 @@
                     toggleCartModal();
                 });
             };
-
             setupAutoScroll();
         }
 
@@ -880,7 +824,6 @@
             if (autoScrollInterval) clearInterval(autoScrollInterval);
             const scrollContainer = document.getElementById('extra-imgs-scroll');
             if (!scrollContainer) return;
-
             let scrollAmount = 0;
             autoScrollInterval = setInterval(() => {
                 if (!document.getElementById('product-modal').classList.contains('hidden')) {
@@ -898,11 +841,9 @@
         function setActiveTab(tab) {
             currentTab = tab;
             updateBackground(tab);
-
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.className = "tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700";
             });
-
             const activeBtn = document.getElementById(`tab-${tab}`);
             if (activeBtn) {
                 activeBtn.className = "tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-600/30";
@@ -929,7 +870,6 @@
                 pageSubtitle.innerText = "اشتراک‌ها، تبلیغات و خدمات چنل‌ها";
                 container.className = "grid grid-cols-2 gap-4 sm:gap-6";
             }
-
             renderProducts();
         }
 
