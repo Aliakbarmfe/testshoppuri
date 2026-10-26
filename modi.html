@@ -36,8 +36,9 @@
     <!-- MAIN CHAT PANEL (USERS LIST ONLY) -->
     <div class="flex-grow flex flex-col">
         <div class="glass-card rounded-2xl p-4 flex flex-col flex-grow">
-            <h3 class="font-bold text-slate-300 text-sm mb-3 pb-2 border-b border-slate-800 flex items-center gap-2">
-                <i class="fa-solid fa-users text-purple-400"></i> لیست پیام‌های کاربران (جدیدترین در بالا)
+            <h3 class="font-bold text-slate-300 text-sm mb-3 pb-2 border-b border-slate-800 flex items-center justify-between">
+                <span class="flex items-center gap-2"><i class="fa-solid fa-users text-purple-400"></i> لیست پیام‌های کاربران (جدیدترین در بالا)</span>
+                <span class="text-[11px] text-slate-400 font-normal">نکته: برای مدیریت (بلاک/حذف)، روی پی‌وی کاربر نگه دارید</span>
             </h3>
             <div id="users-list" class="space-y-2 overflow-y-auto flex-grow max-h-[75vh]">
                 <p class="text-center text-slate-500 text-xs py-8">در حال دریافت کاربران...</p>
@@ -61,6 +62,11 @@
                 <p class="text-center text-slate-500 text-xs py-12">در حال بارگذاری پیام‌ها...</p>
             </div>
 
+            <!-- BLOCK NOTICE BANNER -->
+            <div id="block-notice-banner" class="bg-rose-500/20 border border-rose-500/30 text-rose-400 text-xs p-2.5 rounded-xl mb-3 text-center font-bold hidden">
+                این کاربر مسدود (بلاک) است. امکان ارسال پیام وجود ندارد.
+            </div>
+
             <!-- REPLY FORM -->
             <form id="reply-form" onsubmit="sendAdminReply(event)" class="pt-3 border-t border-slate-800 flex items-center gap-2">
                 <input type="file" id="admin-image-input" accept="image/*" class="hidden" onchange="prepareAdminImageUpload(event)">
@@ -75,6 +81,20 @@
         </div>
     </div>
 
+    <!-- USER ACTION MODAL (BLOCK / DELETE) -->
+    <div id="user-action-modal" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-4">
+        <div class="glass-card rounded-2xl p-5 max-w-xs w-full flex flex-col gap-3 shadow-2xl border border-slate-700">
+            <h3 class="font-bold text-white text-sm mb-1 text-center" id="action-modal-username">مدیریت کاربر</h3>
+            <button id="block-action-btn" onclick="toggleBlockUser()" class="w-full bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/30 font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-ban"></i> بلاک کردن کاربر
+            </button>
+            <button onclick="deleteUserChat()" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2">
+                <i class="fa-solid fa-trash text-rose-400"></i> حذف چت
+            </button>
+            <button onclick="closeUserActionModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-slate-400 font-bold py-2 rounded-xl text-xs transition">انصراف</button>
+        </div>
+    </div>
+
     <!-- IMAGE PREVIEW & UPLOAD PROGRESS MODAL -->
     <div id="image-preview-modal" class="fixed inset-0 z-50 bg-black/90 hidden flex items-center justify-center p-4">
         <div class="glass-card rounded-2xl p-4 max-w-md w-full flex flex-col items-center shadow-2xl border border-slate-700">
@@ -84,7 +104,6 @@
                 <i class="fa-solid fa-file-image text-amber-400"></i> حجم فایل: <span id="preview-file-size" class="text-white font-semibold">0 KB</span>
             </div>
             
-            <!-- Progress Bar Animation Container -->
             <div id="upload-progress-container" class="w-full bg-slate-800 rounded-full h-3 mb-4 hidden overflow-hidden border border-slate-700">
                 <div id="upload-progress-bar" class="bg-amber-500 h-full w-0 animate-progress"></div>
             </div>
@@ -114,8 +133,11 @@
         let selectedUser = null;
         let pendingImageFile = null;
         let pendingImageBase64 = null;
+        let pressTimer = null;
+        let contextMenuUser = null;
 
-        // Load user activity map from localStorage to track new messages and unread badges reliably
+        // Load blocked users and user activity map from localStorage
+        let blockedUsers = JSON.parse(localStorage.getItem('admin_blocked_users') || '[]');
         let userActivityMap = JSON.parse(localStorage.getItem('admin_user_activity') || '{}');
 
         async function loadUsersList() {
@@ -135,14 +157,15 @@
                             };
                         }
 
-                        // Check if a new message has arrived
                         if (user.lastMessage && user.lastMessage !== userActivityMap[uname].lastMsg) {
-                            userActivityMap[uname].lastMsg = user.lastMessage;
-                            userActivityMap[uname].timestamp = Date.now(); // Update timestamp to move to top
-                            
-                            // If user chat is not currently open, increase unread count
-                            if (selectedUser !== uname) {
-                                userActivityMap[uname].unreadCount = (userActivityMap[uname].unreadCount || 0) + 1;
+                            // If user is blocked, ignore/skip showing new message updates if desired
+                            if (!blockedUsers.includes(uname)) {
+                                userActivityMap[uname].lastMsg = user.lastMessage;
+                                userActivityMap[uname].timestamp = Date.now();
+                                
+                                if (selectedUser !== uname) {
+                                    userActivityMap[uname].unreadCount = (userActivityMap[uname].unreadCount || 0) + 1;
+                                }
                             }
                         }
 
@@ -152,27 +175,55 @@
 
                     localStorage.setItem('admin_user_activity', JSON.stringify(userActivityMap));
 
-                    // Sort users by latest timestamp (newest message first)
                     data.users.sort((a, b) => b._sortTimestamp - a._sortTimestamp);
 
                     container.innerHTML = '';
                     data.users.forEach(user => {
+                        const isBlocked = blockedUsers.includes(user.username);
                         const div = document.createElement('div');
-                        div.className = `p-3 rounded-xl bg-slate-800/80 hover:bg-purple-600/30 border border-slate-700/60 cursor-pointer transition flex items-center justify-between ${selectedUser === user.username ? 'border-purple-500 bg-purple-600/20' : ''}`;
-                        div.onclick = () => openUserChat(user.username);
+                        div.className = `p-3 rounded-xl bg-slate-800/80 hover:bg-purple-600/30 border border-slate-700/60 cursor-pointer transition flex items-center justify-between ${selectedUser === user.username ? 'border-purple-500 bg-purple-600/20' : ''} ${isBlocked ? 'opacity-60 border-rose-500/40' : ''}`;
                         
+                        // Click to open chat normally
+                        div.onclick = (e) => {
+                            openUserChat(user.username);
+                        };
+
+                        // Long-press (holding) and right-click handlers for options modal
+                        const startPress = (e) => {
+                            pressTimer = setTimeout(() => {
+                                showUserActionMenu(user.username, e);
+                            }, 600);
+                        };
+                        const cancelPress = () => clearTimeout(pressTimer);
+
+                        div.addEventListener('mousedown', startPress);
+                        div.addEventListener('mouseup', cancelPress);
+                        div.addEventListener('mouseleave', cancelPress);
+                        div.addEventListener('touchstart', startPress, { passive: true });
+                        div.addEventListener('touchend', cancelPress);
+                        div.addEventListener('touchmove', cancelPress);
+                        div.addEventListener('contextmenu', (e) => {
+                            e.preventDefault();
+                            showUserActionMenu(user.username, e);
+                        });
+
                         let unreadBadgeHtml = '';
-                        if (user._unreadCount && user._unreadCount > 0) {
+                        if (!isBlocked && user._unreadCount && user._unreadCount > 0) {
                             unreadBadgeHtml = `<span class="bg-rose-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full">${user._unreadCount}</span>`;
                         }
+
+                        let blockBadgeHtml = isBlocked ? `<span class="bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[9px] font-bold px-2 py-0.5 rounded-md ml-2">بلاک شده</span>` : '';
 
                         div.innerHTML = `
                             <div class="flex-grow">
                                 <div class="flex items-center justify-between">
-                                    <h5 class="font-bold text-xs text-white">${user.username}</h5>
+                                    <div class="flex items-center">
+                                        <h5 class="font-bold text-xs text-white">${user.username}</h5>
+                                        ${blockBadgeHtml}
+                                    </div>
                                     ${unreadBadgeHtml}
                                 </div>
-                                <p class="text-[11px] text-slate-400 truncate max-w-[220px] mt-0.5">${user.lastMessage || '...'}</p>
+                                <p class="text-[11px] text-slate-400 truncate max-w-[220px] mt-0.5">${isBlocked ? 'کاربر مسدود شده است' : (user.lastMessage || '...')}</p>
                             </div>
                             <span class="text-[9px] text-slate-500 mr-2">${user.lastTime || ''}</span>
                         `;
@@ -186,12 +237,112 @@
             }
         }
 
+        function showUserActionMenu(username, e) {
+            if (e && e.cancelable) e.preventDefault();
+            contextMenuUser = username;
+            document.getElementById('action-modal-username').innerText = `کاربر: ${username}`;
+            
+            const isBlocked = blockedUsers.includes(username);
+            const blockBtn = document.getElementById('block-action-btn');
+            if (isBlocked) {
+                blockBtn.innerHTML = `<i class="fa-solid fa-check-circle"></i> رفع بلاک کاربر`;
+                blockBtn.className = `w-full bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 border border-emerald-500/30 font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2`;
+            } else {
+                blockBtn.innerHTML = `<i class="fa-solid fa-ban"></i> بلاک کردن کاربر`;
+                blockBtn.className = `w-full bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 border border-rose-500/30 font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2`;
+            }
+            
+            document.getElementById('user-action-modal').classList.remove('hidden');
+        }
+
+        function closeUserActionModal() {
+            document.getElementById('user-action-modal').classList.add('hidden');
+            contextMenuUser = null;
+        }
+
+        async function toggleBlockUser() {
+            if (!contextMenuUser) return;
+            const username = contextMenuUser;
+            const isBlocked = blockedUsers.includes(username);
+            
+            if (isBlocked) {
+                // Unblock user
+                blockedUsers = blockedUsers.filter(u => u !== username);
+                localStorage.setItem('admin_blocked_users', JSON.stringify(blockedUsers));
+                
+                // Send official unblock message automatically
+                const officialUnblockMsg = "کاربر گرامی، محدودیت حساب کاربری و ارسال پیام شما توسط مدیریت و بخش پشتیبانی برداشته شد. اکنون می‌توانید مجدداً با ما در ارتباط باشید.";
+                try {
+                    await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: username,
+                            text: officialUnblockMsg,
+                            sender: 'admin'
+                        })
+                    });
+                } catch (e) {}
+
+                alert(`کاربر ${username} با موفقیت رفع بلاک شد.`);
+            } else {
+                // Block user
+                blockedUsers.push(username);
+                localStorage.setItem('admin_blocked_users', JSON.stringify(blockedUsers));
+                
+                // Send official block message automatically
+                const officialBlockMsg = "پیام شما از این پس به مدیر ارسال نخواهد شد. (کاربر گرامی، حساب کاربری و دسترسی شما جهت ارسال پیام توسط بخش پشتیبانی و مدیریت مسدود گردید.)";
+                try {
+                    await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: username,
+                            text: officialBlockMsg,
+                            sender: 'admin'
+                        })
+                    });
+                } catch (e) {}
+
+                alert(`کاربر ${username} با موفقیت بلاک شد.`);
+            }
+
+            closeUserActionModal();
+            loadUsersList();
+            if (selectedUser === username) {
+                updateChatInputState();
+            }
+        }
+
+        async function deleteUserChat() {
+            if (!contextMenuUser) return;
+            const username = contextMenuUser;
+            
+            if (!confirm(`آیا مطمئن هستید که می‌خواهید چت کاربر ${username} را حذف کنید؟`)) {
+                return;
+            }
+            
+            try {
+                await fetch(`/api/chat?action=delete_chat&username=${username}`, { method: 'POST' }).catch(() => {});
+                delete userActivityMap[username];
+                localStorage.setItem('admin_user_activity', JSON.stringify(userActivityMap));
+                
+                if (selectedUser === username) {
+                    closeChatModal();
+                }
+                
+                closeUserActionModal();
+                loadUsersList();
+            } catch (err) {
+                alert("خطا در حذف چت.");
+            }
+        }
+
         async function openUserChat(username) {
             selectedUser = username;
             document.getElementById('active-user-title').innerText = `پی‌وی کاربر: ${username}`;
             document.getElementById('chat-modal').classList.remove('hidden');
             
-            // Clear unread count for this user
             if (userActivityMap[username]) {
                 userActivityMap[username].unreadCount = 0;
                 localStorage.setItem('admin_user_activity', JSON.stringify(userActivityMap));
@@ -201,8 +352,35 @@
                 await fetch(`/api/chat?action=mark_read&username=${username}`, { method: 'POST' });
             } catch (e) {}
 
+            updateChatInputState();
             loadUsersList();
             loadAdminChatMessages();
+        }
+
+        function updateChatInputState() {
+            const input = document.getElementById('admin-msg-input');
+            const noticeBanner = document.getElementById('block-notice-banner');
+            const replyForm = document.getElementById('reply-form');
+            const imageBtn = replyForm.querySelector('button[type="button"]');
+            const sendBtn = replyForm.querySelector('button[type="submit"]');
+
+            const isBlocked = selectedUser && blockedUsers.includes(selectedUser);
+
+            if (isBlocked) {
+                input.disabled = true;
+                input.placeholder = 'کاربر مسدود است...';
+                input.classList.add('opacity-50', 'cursor-not-allowed');
+                if (imageBtn) imageBtn.disabled = true;
+                if (sendBtn) sendBtn.disabled = true;
+                noticeBanner.classList.remove('hidden');
+            } else {
+                input.disabled = false;
+                input.placeholder = 'پاسخ مدیر...';
+                input.classList.remove('opacity-50', 'cursor-not-allowed');
+                if (imageBtn) imageBtn.disabled = false;
+                if (sendBtn) sendBtn.disabled = false;
+                noticeBanner.classList.add('hidden');
+            }
         }
 
         function closeChatModal() {
@@ -221,6 +399,7 @@
                 if (data.messages && Object.keys(data.messages).length > 0) {
                     container.innerHTML = '';
                     Object.values(data.messages).forEach(msg => {
+                        // If user is blocked, we don't display their new messages sent after block
                         const isAdmin = msg.sender === 'admin';
                         const div = document.createElement('div');
                         div.className = `flex flex-col ${isAdmin ? 'items-start' : 'items-end'}`;
@@ -252,6 +431,11 @@
 
         async function sendAdminReply(e) {
             e.preventDefault();
+            if (selectedUser && blockedUsers.includes(selectedUser)) {
+                alert("این کاربر مسدود است و نمی‌توانید به او پیام دهید.");
+                return;
+            }
+
             const input = document.getElementById('admin-msg-input');
             const text = input.value.trim();
             if (!text || !selectedUser) return;
@@ -275,6 +459,12 @@
         }
 
         function prepareAdminImageUpload(e) {
+            if (selectedUser && blockedUsers.includes(selectedUser)) {
+                alert("این کاربر مسدود است و نمی‌توانید عکس ارسال کنید.");
+                e.target.value = '';
+                return;
+            }
+
             const file = e.target.files[0];
             if (!file || !selectedUser) return;
 
@@ -313,6 +503,7 @@
 
         async function confirmAndSendImage() {
             if (!pendingImageBase64 || !selectedUser) return;
+            if (blockedUsers.includes(selectedUser)) return;
 
             document.getElementById('preview-action-buttons').classList.add('hidden');
             document.getElementById('upload-progress-container').classList.remove('hidden');
@@ -344,7 +535,7 @@
                 setTimeout(() => {
                     document.getElementById('image-preview-modal').classList.add('hidden');
                     document.getElementById('admin-image-input').value = '';
-                    pendingImageFile = null;
+                    pendingImageFile = false;
                     pendingImageBase64 = null;
                     loadAdminChatMessages();
                 }, 1000);
@@ -379,4 +570,3 @@
     </script>
 </body>
 </html>
- 
