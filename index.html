@@ -80,6 +80,12 @@
 </head>
 <body class="min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-purple-600 selection:text-white relative">
 
+    <!-- FLOATING SUPPORT BUTTON -->
+    <button onclick="goToSupportPage()" class="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold px-5 py-3.5 rounded-full shadow-2xl flex items-center gap-3 transition-all duration-300 hover:scale-105 border border-purple-400/30">
+        <i class="fa-solid fa-headset text-xl"></i>
+        <span class="text-sm">پشتیبانی</span>
+    </button>
+
     <!-- NOTIFICATION TOAST -->
     <div id="notification-toast" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 hidden max-w-sm w-11/12">
         <div class="glass-card border border-emerald-500/50 bg-slate-900/95 text-white px-4 py-3 rounded-2xl shadow-2xl flex items-center gap-3 backdrop-blur-xl">
@@ -352,19 +358,23 @@
         let cart = [];
         let toastTimeout = null;
 
+        // SUPPORT NAVIGATION FUNCTION
+        function goToSupportPage() {
+            if (!currentUser) {
+                openAuthChoiceModal("برای استفاده از پشتیبانی، باید ابتدا وارد حساب کاربری خود شوید یا ثبت‌نام کنید.");
+            } else {
+                window.location.href = "posht.html";
+            }
+        }
+
         // HELPER: Price Formatter with (،)
         function formatPrice(value) {
             if (value === null || value === undefined || value === '') return '۰';
-            // Convert Persian/Arabic digits to English digits first if any
             let str = value.toString().replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
-            // Extract numeric digits
             let numStr = str.replace(/[^0-9]/g, '');
             if (!numStr) return '۰';
             
-            // Format number with (،) comma
             let formatted = parseInt(numStr, 10).toLocaleString('en-US').replace(/,/g, '،');
-            
-            // Convert back to Persian digits for clean look
             const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
             return formatted.replace(/\d/g, x => persianDigits[x]);
         }
@@ -378,11 +388,10 @@
 
                 const now = ctx.currentTime;
                 
-                // Note 1 (High soft tone)
                 const osc1 = ctx.createOscillator();
                 const gain1 = ctx.createGain();
                 osc1.type = 'sine';
-                osc1.frequency.setValueAtTime(523.25, now); // C5
+                osc1.frequency.setValueAtTime(523.25, now);
                 gain1.gain.setValueAtTime(0.15, now);
                 gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
                 osc1.connect(gain1);
@@ -390,11 +399,10 @@
                 osc1.start(now);
                 osc1.stop(now + 0.3);
 
-                // Note 2 (Brighter higher note)
                 const osc2 = ctx.createOscillator();
                 const gain2 = ctx.createGain();
                 osc2.type = 'sine';
-                osc2.frequency.setValueAtTime(783.99, now + 0.1); // G5
+                osc2.frequency.setValueAtTime(783.99, now + 0.1);
                 gain2.gain.setValueAtTime(0.2, now + 0.1);
                 gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
                 osc2.connect(gain2);
@@ -607,7 +615,6 @@
             }
         }
 
-        // SYNC USER CART WITH FIREBASE & LOCALSTORAGE
         async function syncCartWithFirebase() {
             if (!currentUser) return;
             currentUser.cart = cart;
@@ -637,7 +644,6 @@
             });
         }
 
-        // Helper to extract raw integer price from product object
         function getProductRawPrice(item) {
             let pStr = item.priceDiscount || item.priceSingle || item.priceMain || '0';
             let numStr = pStr.toString().replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[^0-9]/g, '');
@@ -679,7 +685,6 @@
                 cartItemsContainer.appendChild(itemDiv);
             });
 
-            // Display formatted total price
             document.getElementById('cart-total-price').innerText = `${formatPrice(totalPrice)} تومان`;
         }
 
@@ -948,4 +953,4 @@
     </script>
 </body>
 </html>
-``` 
+ 
