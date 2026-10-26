@@ -2,7 +2,7 @@
 <html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>پشتیبانی آنلاین - مارول سیتی</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -12,10 +12,10 @@
         .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between p-4 max-w-3xl mx-auto">
+<body class="h-[100dvh] sm:min-h-screen flex flex-col justify-between p-2 sm:p-4 max-w-3xl mx-auto overflow-hidden sm:overflow-auto">
 
     <!-- HEADER -->
-    <header class="glass-card rounded-2xl p-4 flex items-center justify-between mb-4 shadow-xl">
+    <header class="glass-card rounded-2xl p-3 sm:p-4 flex items-center justify-between mb-2 sm:mb-4 shadow-xl flex-shrink-0">
         <div class="flex items-center gap-3">
             <a href="index.html" class="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 transition">
                 <i class="fa-solid fa-arrow-right"></i>
@@ -25,32 +25,49 @@
                 <p id="user-info" class="text-xs text-purple-400">ارتباط مستقیم با مدیریت</p>
             </div>
         </div>
-
-        <!-- ADMIN LOGIN BUTTON -->
-        <a href="modi.html" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs sm:text-sm flex items-center gap-2 shadow-lg transition">
-            <i class="fa-solid fa-user-shield"></i>
-            <span>ورود مدیر</span>
-        </a>
     </header>
 
-    <!-- CHAT BOX -->
-    <main class="glass-card rounded-2xl flex-grow p-4 flex flex-col justify-between overflow-hidden relative min-h-[450px]">
+    <!-- OFFICIAL NOTICE BANNER -->
+    <div class="glass-card rounded-xl p-2.5 sm:p-3 mb-2 sm:mb-3 text-xs text-amber-300 flex items-center gap-2 border border-amber-500/20 flex-shrink-0 shadow-lg">
+        <i class="fa-solid fa-triangle-exclamation text-amber-400 text-sm"></i>
+        <span>برای سفارش جدید، اول سفارش قبلی باید لغو بشه یا تکمیل بشه.</span>
+    </div>
+
+    <!-- CHAT BOX (80% Height on Mobile) -->
+    <main class="glass-card rounded-2xl flex-grow p-3 sm:p-4 flex flex-col justify-between overflow-hidden relative h-[80vh] sm:h-auto max-h-[80vh] shadow-2xl">
         
         <!-- ORDER REVIEW / ACTIVE ORDER PANEL -->
-        <div id="order-panel" class="hidden mb-3 bg-slate-800/90 border border-purple-500/30 rounded-2xl p-4 shadow-xl"></div>
+        <div id="order-panel" class="hidden mb-3 bg-slate-800/90 border border-purple-500/30 rounded-2xl p-4 shadow-xl flex-shrink-0"></div>
 
-        <div id="chat-messages" class="flex-grow overflow-y-auto space-y-3 pr-1 max-h-[50vh]">
+        <div id="chat-messages" class="flex-grow overflow-y-auto space-y-3 pr-1 max-h-[calc(80vh-140px)]">
             <p class="text-center text-slate-500 text-xs py-8">در حال بارگذاری پیام‌ها...</p>
         </div>
 
+        <!-- IMAGE PREVIEW CONTAINER -->
+        <div id="image-preview-container" class="hidden mb-2 bg-slate-800/95 border border-purple-500/40 rounded-2xl p-3 flex items-center justify-between gap-3 shadow-xl flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <img id="preview-thumb" src="" class="w-12 h-12 object-cover rounded-xl border border-slate-700">
+                <div>
+                    <p class="text-xs font-bold text-white">پیش‌نمایش تصویر</p>
+                    <p id="preview-size" class="text-[10px] text-purple-400 font-mono mt-0.5"></p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" onclick="cancelImagePreview()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 px-3 py-1.5 rounded-xl text-xs transition">انصراف</button>
+                <button type="button" onclick="confirmSendImage()" class="bg-purple-600 hover:bg-purple-500 text-white px-4 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg shadow-purple-600/30">
+                    <i class="fa-solid fa-paper-plane"></i> ارسال
+                </button>
+            </div>
+        </div>
+
         <!-- INPUT FORM -->
-        <form onsubmit="sendMessage(event)" class="mt-4 pt-3 border-t border-slate-800 flex items-center gap-2">
+        <form onsubmit="sendMessage(event)" class="mt-2 pt-2 border-t border-slate-800 flex items-center gap-2 flex-shrink-0">
             <input type="file" id="image-input" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
-            <button type="button" onclick="document.getElementById('image-input').click()" class="bg-slate-800 hover:bg-slate-700 text-purple-400 p-3 rounded-xl transition flex items-center justify-center" title="ارسال عکس">
+            <button type="button" onclick="document.getElementById('image-input').click()" class="bg-slate-800 hover:bg-slate-700 text-purple-400 p-3 rounded-xl transition flex items-center justify-center flex-shrink-0" title="انتخاب عکس">
                 <i class="fa-solid fa-image text-lg"></i>
             </button>
             <input type="text" id="msg-input" placeholder="پیام خود را بنویسید..." class="flex-grow bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500">
-            <button type="submit" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-5 py-3 rounded-xl transition flex items-center justify-center">
+            <button type="submit" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-5 py-3 rounded-xl transition flex items-center justify-center flex-shrink-0">
                 <i class="fa-solid fa-paper-plane"></i>
             </button>
         </form>
@@ -71,6 +88,7 @@
 
     <script>
         let currentUser = null;
+        let selectedImageFile = null;
 
         function checkUser() {
             const saved = localStorage.getItem('app_user');
@@ -102,7 +120,6 @@
             return parseInt(numStr, 10) || 0;
         }
 
-        // Display pending order or active order with images, descriptions, prices and tracking codes
         function checkOrderPanel() {
             const panel = document.getElementById('order-panel');
             const pendingOrderStr = localStorage.getItem('pending_order');
@@ -124,7 +141,7 @@
                     </div>
                 `).join('');
 
-                panel.className = "mb-3 bg-slate-800/90 border border-emerald-500/30 rounded-2xl p-4 shadow-xl";
+                panel.className = "mb-3 bg-slate-800/90 border border-emerald-500/30 rounded-2xl p-4 shadow-xl flex-shrink-0";
                 panel.innerHTML = `
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="text-sm font-bold text-emerald-400"><i class="fa-solid fa-circle-check ml-1"></i> سفارش ارسال شده برای پشتیبانی</h3>
@@ -162,7 +179,7 @@
                     `;
                 }).join('');
 
-                panel.className = "mb-3 bg-slate-800/90 border border-purple-500/30 rounded-2xl p-4 shadow-xl";
+                panel.className = "mb-3 bg-slate-800/90 border border-purple-500/30 rounded-2xl p-4 shadow-xl flex-shrink-0";
                 panel.innerHTML = `
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="text-sm font-bold text-purple-400"><i class="fa-solid fa-basket-shopping ml-1"></i> محصولات سبد خرید (آماده ارسال)</h3>
@@ -181,7 +198,6 @@
             }
         }
 
-        // Send cart products (with photos, descriptions, prices and purely numeric tracking codes) to support chat
         async function sendCartOrderToSupport() {
             const pendingOrderStr = localStorage.getItem('pending_order');
             if (!pendingOrderStr || !currentUser) return;
@@ -192,7 +208,6 @@
                 totalPrice += getProductRawPrice(item);
             });
 
-            // دریافت کدهای رهگیری عددی و ترتیبی از API جدید
             let trackingCodes = [];
             try {
                 const res = await fetch('/api/tracking_code', {
@@ -228,7 +243,6 @@
             localStorage.setItem('active_order', JSON.stringify(order));
             localStorage.removeItem('pending_order');
 
-            // Clear cart
             currentUser.cart = [];
             localStorage.setItem('app_user', JSON.stringify(currentUser));
             try {
@@ -239,7 +253,6 @@
                 });
             } catch(e) {}
 
-            // Build rich HTML summary containing product photos, descriptions, prices and purely numeric tracking codes for the chat
             let orderHtmlSummary = `📦 <b>ثبت سفارش جدید از سبد خرید:</b><br><div class="space-y-2 mt-2">`;
             processedItems.forEach(item => {
                 const rawPrice = getProductRawPrice(item);
@@ -275,7 +288,6 @@
             loadMessages();
         }
 
-        // Cancel order
         async function cancelActiveOrder() {
             const activeOrderStr = localStorage.getItem('active_order');
             if (!activeOrderStr || !currentUser) return;
@@ -361,56 +373,100 @@
             }
         }
 
-        async function handleImageUpload(e) {
+        // Image Handling with Preview, Size & Animation
+        function handleImageUpload(e) {
             const file = e.target.files[0];
-            if (!file || !currentUser) return;
+            if (!file) return;
 
             if (file.size > 5 * 1024 * 1024) {
                 alert("حجم عکس نباید بیشتر از ۵ مگابایت باشد.");
+                e.target.value = '';
                 return;
             }
 
+            selectedImageFile = file;
             const reader = new FileReader();
-            reader.onload = async function(uploadEvent) {
-                const base64Image = uploadEvent.target.result;
-                const container = document.getElementById('chat-messages');
-                const loadingDiv = document.createElement('div');
-                loadingDiv.id = 'uploading-indicator';
-                loadingDiv.className = 'flex flex-col items-start';
-                loadingDiv.innerHTML = `<div class="bg-slate-800 text-purple-400 p-3 rounded-2xl text-xs flex items-center gap-2"><i class="fa-solid fa-spinner fa-spin"></i> در حال آپلود و ارسال عکس...</div>`;
-                container.appendChild(loadingDiv);
-                container.scrollTop = container.scrollHeight;
-
-                try {
-                    const uploadRes = await fetch('/api/upload', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ image: base64Image })
-                    });
-                    const uploadData = await uploadRes.json();
-                    if (!uploadData.success) throw new Error(uploadData.error || 'خطا در آپلود عکس');
-
-                    await fetch('/api/chat', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            username: currentUser.username,
-                            text: '',
-                            imageUrl: uploadData.url,
-                            sender: 'user'
-                        })
-                    });
-
-                    document.getElementById('uploading-indicator')?.remove();
-                    e.target.value = '';
-                    loadMessages();
-                } catch (err) {
-                    document.getElementById('uploading-indicator')?.remove();
-                    alert("خطا در ارسال عکس: " + err.message);
-                    e.target.value = '';
-                }
+            reader.onload = function(uploadEvent) {
+                document.getElementById('preview-thumb').src = uploadEvent.target.result;
+                document.getElementById('preview-size').innerText = formatFileSize(file.size);
+                document.getElementById('image-preview-container').classList.remove('hidden');
             };
             reader.readAsDataURL(file);
+        }
+
+        function cancelImagePreview() {
+            selectedImageFile = null;
+            document.getElementById('image-preview-container').classList.add('hidden');
+            document.getElementById('image-input').value = '';
+        }
+
+        async function confirmSendImage() {
+            if (!selectedImageFile || !currentUser) return;
+
+            const base64Image = document.getElementById('preview-thumb').src;
+            const fileSizeText = formatFileSize(selectedImageFile.size);
+
+            document.getElementById('image-preview-container').classList.add('hidden');
+
+            const container = document.getElementById('chat-messages');
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = 'uploading-indicator';
+            loadingDiv.className = 'flex flex-col items-start w-full';
+            loadingDiv.innerHTML = `
+                <div class="bg-slate-800 text-purple-300 p-3 rounded-2xl text-xs flex flex-col gap-2 w-full max-w-xs border border-purple-500/30 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-circle-notch fa-spin text-purple-400 text-sm"></i>
+                            <span>در حال ارسال عکس (${fileSizeText})...</span>
+                        </span>
+                        <span class="font-mono text-[10px] text-purple-400 animate-pulse">لطفاً صبر کنید</span>
+                    </div>
+                    <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                        <div class="bg-gradient-to-r from-purple-500 to-indigo-500 h-full rounded-full animate-pulse w-3/4"></div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(loadingDiv);
+            container.scrollTop = container.scrollHeight;
+
+            try {
+                const uploadRes = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: base64Image })
+                });
+                const uploadData = await uploadRes.json();
+                if (!uploadData.success) throw new Error(uploadData.error || 'خطا در آپلود عکس');
+
+                await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: currentUser.username,
+                        text: '',
+                        imageUrl: uploadData.url,
+                        sender: 'user'
+                    })
+                });
+
+                document.getElementById('uploading-indicator')?.remove();
+                selectedImageFile = null;
+                document.getElementById('image-input').value = '';
+                loadMessages();
+            } catch (err) {
+                document.getElementById('uploading-indicator')?.remove();
+                alert("خطا در ارسال عکس: " + err.message);
+                selectedImageFile = null;
+                document.getElementById('image-input').value = '';
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 بایت';
+            const k = 1024;
+            const sizes = ['بایت', 'کیلوبایت', 'مگابایت'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
         }
 
         function openImageModal(url) {
@@ -430,4 +486,3 @@
     </script>
 </body>
 </html>
- 
