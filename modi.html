@@ -115,6 +115,9 @@
         let pendingImageFile = null;
         let pendingImageBase64 = null;
 
+        // Load user activity map from localStorage to track new messages and unread badges reliably
+        let userActivityMap = JSON.parse(localStorage.getItem('admin_user_activity') || '{}');
+
         async function loadUsersList() {
             try {
                 const res = await fetch('/api/chat?action=get_users');
@@ -122,8 +125,35 @@
                 const container = document.getElementById('users-list');
 
                 if (data.users && data.users.length > 0) {
-                    // Sort users by newest message first (based on timestamp / lastTime)
-                    data.users.sort((a, b) => new Date(b.timestamp || b.lastTime || 0) - new Date(a.timestamp || a.lastTime || 0));
+                    data.users.forEach(user => {
+                        const uname = user.username;
+                        if (!userActivityMap[uname]) {
+                            userActivityMap[uname] = {
+                                lastMsg: user.lastMessage || '',
+                                timestamp: Date.now(),
+                                unreadCount: 0
+                            };
+                        }
+
+                        // Check if a new message has arrived
+                        if (user.lastMessage && user.lastMessage !== userActivityMap[uname].lastMsg) {
+                            userActivityMap[uname].lastMsg = user.lastMessage;
+                            userActivityMap[uname].timestamp = Date.now(); // Update timestamp to move to top
+                            
+                            // If user chat is not currently open, increase unread count
+                            if (selectedUser !== uname) {
+                                userActivityMap[uname].unreadCount = (userActivityMap[uname].unreadCount || 0) + 1;
+                            }
+                        }
+
+                        user._sortTimestamp = userActivityMap[uname].timestamp;
+                        user._unreadCount = userActivityMap[uname].unreadCount;
+                    });
+
+                    localStorage.setItem('admin_user_activity', JSON.stringify(userActivityMap));
+
+                    // Sort users by latest timestamp (newest message first)
+                    data.users.sort((a, b) => b._sortTimestamp - a._sortTimestamp);
 
                     container.innerHTML = '';
                     data.users.forEach(user => {
@@ -131,10 +161,9 @@
                         div.className = `p-3 rounded-xl bg-slate-800/80 hover:bg-purple-600/30 border border-slate-700/60 cursor-pointer transition flex items-center justify-between ${selectedUser === user.username ? 'border-purple-500 bg-purple-600/20' : ''}`;
                         div.onclick = () => openUserChat(user.username);
                         
-                        // Unread count badge HTML condition
                         let unreadBadgeHtml = '';
-                        if (user.unreadCount && user.unreadCount > 0) {
-                            unreadBadgeHtml = `<span class="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">${user.unreadCount}</span>`;
+                        if (user._unreadCount && user._unreadCount > 0) {
+                            unreadBadgeHtml = `<span class="bg-rose-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full">${user._unreadCount}</span>`;
                         }
 
                         div.innerHTML = `
@@ -162,12 +191,15 @@
             document.getElementById('active-user-title').innerText = `پی‌وی کاربر: ${username}`;
             document.getElementById('chat-modal').classList.remove('hidden');
             
-            // Mark messages as read / clear unread count locally and refresh list
+            // Clear unread count for this user
+            if (userActivityMap[username]) {
+                userActivityMap[username].unreadCount = 0;
+                localStorage.setItem('admin_user_activity', JSON.stringify(userActivityMap));
+            }
+
             try {
                 await fetch(`/api/chat?action=mark_read&username=${username}`, { method: 'POST' });
-            } catch (e) {
-                // Ignore if endpoint format differs
-            }
+            } catch (e) {}
 
             loadUsersList();
             loadAdminChatMessages();
@@ -254,7 +286,6 @@
 
             pendingImageFile = file;
 
-            // Format size display
             const sizeInKB = (file.size / 1024).toFixed(1);
             const sizeText = sizeInKB > 1024 ? (file.size / (1024 * 1024)).toFixed(2) + ' MB' : sizeInKB + ' KB';
             document.getElementById('preview-file-size').innerText = sizeText;
@@ -264,12 +295,10 @@
                 pendingImageBase64 = uploadEvent.target.result;
                 document.getElementById('preview-img-tag').src = pendingImageBase64;
                 
-                // Reset progress UI elements
                 document.getElementById('upload-progress-container').classList.add('hidden');
                 document.getElementById('upload-status-text').classList.add('hidden');
                 document.getElementById('preview-action-buttons').classList.remove('hidden');
 
-                // Open preview modal
                 document.getElementById('image-preview-modal').classList.remove('hidden');
             };
             reader.readAsDataURL(file);
@@ -285,7 +314,6 @@
         async function confirmAndSendImage() {
             if (!pendingImageBase64 || !selectedUser) return;
 
-            // Show animation and progress bar
             document.getElementById('preview-action-buttons').classList.add('hidden');
             document.getElementById('upload-progress-container').classList.remove('hidden');
             document.getElementById('upload-status-text').classList.remove('hidden');
@@ -313,7 +341,6 @@
                     })
                 });
 
-                // Close preview modal and reload messages
                 setTimeout(() => {
                     document.getElementById('image-preview-modal').classList.add('hidden');
                     document.getElementById('admin-image-input').value = '';
@@ -352,3 +379,4 @@
     </script>
 </body>
 </html>
+ 
