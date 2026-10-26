@@ -35,7 +35,11 @@
 
     <!-- CHAT BOX -->
     <main class="glass-card rounded-2xl flex-grow p-4 flex flex-col justify-between overflow-hidden relative min-h-[450px]">
-        <div id="chat-messages" class="flex-grow overflow-y-auto space-y-3 pr-1 max-h-[60vh]">
+        
+        <!-- ORDER REVIEW / ACTIVE ORDER PANEL -->
+        <div id="order-panel" class="hidden mb-3 bg-slate-800/90 border border-purple-500/30 rounded-2xl p-4 shadow-xl"></div>
+
+        <div id="chat-messages" class="flex-grow overflow-y-auto space-y-3 pr-1 max-h-[50vh]">
             <p class="text-center text-slate-500 text-xs py-8">در حال بارگذاری پیام‌ها...</p>
         </div>
 
@@ -77,8 +81,178 @@
             }
             currentUser = JSON.parse(saved);
             document.getElementById('user-info').innerText = `کاربر: ${currentUser.username}`;
+            checkOrderPanel();
             loadMessages();
             setInterval(loadMessages, 3000);
+        }
+
+        function formatPrice(value) {
+            if (value === null || value === undefined || value === '') return '۰';
+            let str = value.toString().replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+            let numStr = str.replace(/[^0-9]/g, '');
+            if (!numStr) return '۰';
+            let formatted = parseInt(numStr, 10).toLocaleString('en-US').replace(/,/g, '،');
+            const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+            return formatted.replace(/\d/g, x => persianDigits[x]);
+        }
+
+        function getProductRawPrice(item) {
+            let pStr = item.priceDiscount || item.priceSingle || item.priceMain || '0';
+            let numStr = pStr.toString().replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).replace(/[^0-9]/g, '');
+            return parseInt(numStr, 10) || 0;
+        }
+
+        // Display pending order from cart or active submitted order with tracking codes
+        function checkOrderPanel() {
+            const panel = document.getElementById('order-panel');
+            const pendingOrderStr = localStorage.getItem('pending_order');
+            const activeOrderStr = localStorage.getItem('active_order');
+
+            if (activeOrderStr) {
+                const order = JSON.parse(activeOrderStr);
+                let itemsHtml = order.items.map(item => `
+                    <div class="flex justify-between items-center text-xs py-1 border-b border-slate-700/50">
+                        <span class="text-white font-semibold">${item.name}</span>
+                        <div class="text-left">
+                            <span class="text-amber-400 ml-2">${formatPrice(getProductRawPrice(item))} تومان</span>
+                            <span class="bg-purple-600/30 text-purple-300 px-2 py-0.5 rounded font-mono text-[10px]">کد رهگیری: ${item.trackingCode || 'حذف شده'}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+                panel.className = "mb-3 bg-slate-800/90 border border-emerald-500/30 rounded-2xl p-4 shadow-xl";
+                panel.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-sm font-bold text-emerald-400"><i class="fa-solid fa-circle-check ml-1"></i> سفارش ارسال شده برای پشتیبانی</h3>
+                        <span class="text-[10px] text-slate-400">${order.timestamp}</span>
+                    </div>
+                    <div class="space-y-1 mb-3 max-h-32 overflow-y-auto pr-1">${itemsHtml}</div>
+                    <div class="flex justify-between items-center text-xs font-bold text-slate-300 pt-2 border-t border-slate-700">
+                        <span>مجموع کل: <span class="text-amber-400">${formatPrice(order.totalPrice)} تومان</span></span>
+                        <button onclick="cancelActiveOrder()" class="bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 px-3 py-1.5 rounded-xl transition text-xs font-bold flex items-center gap-1">
+                            <i class="fa-solid fa-ban"></i> لغو سفارش
+                        </button>
+                    </div>
+                `;
+                panel.classList.remove('hidden');
+            } else if (pendingOrderStr) {
+                const items = JSON.parse(pendingOrderStr);
+                if (items.length === 0) {
+                    panel.classList.add('hidden');
+                    return;
+                }
+
+                let totalPrice = 0;
+                let itemsHtml = items.map(item => {
+                    const rawPrice = getProductRawPrice(item);
+                    totalPrice += rawPrice;
+                    return `
+                        <div class="flex justify-between items-center text-xs py-1 border-b border-slate-700/50">
+                            <span class="text-white font-semibold">${item.name || 'محصول'}</span>
+                            <span class="text-amber-400">${formatPrice(rawPrice)} تومان</span>
+                        </div>
+                    `;
+                }).join('');
+
+                panel.className = "mb-3 bg-slate-800/90 border border-purple-500/30 rounded-2xl p-4 shadow-xl";
+                panel.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-sm font-bold text-purple-400"><i class="fa-solid fa-basket-shopping ml-1"></i> محصولات سبد خرید (آماده ارسال)</h3>
+                    </div>
+                    <div class="space-y-1 mb-3 max-h-32 overflow-y-auto pr-1">${itemsHtml}</div>
+                    <div class="flex justify-between items-center text-xs font-bold text-slate-300 pt-2 border-t border-slate-700">
+                        <span>مجموع کل: <span class="text-amber-400">${formatPrice(totalPrice)} تومان</span></span>
+                        <button onclick="sendCartOrderToSupport()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-4 py-2 rounded-xl transition text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-purple-600/30">
+                            <i class="fa-solid fa-paper-plane"></i> ارسال سفارش برای پشتیبانی
+                        </button>
+                    </div>
+                `;
+                panel.classList.remove('hidden');
+            } else {
+                panel.classList.add('hidden');
+            }
+        }
+
+        // Send cart products to support with auto-generated tracking codes for each product
+        async function sendCartOrderToSupport() {
+            const pendingOrderStr = localStorage.getItem('pending_order');
+            if (!pendingOrderStr || !currentUser) return;
+
+            const items = JSON.parse(pendingOrderStr);
+            let totalPrice = 0;
+
+            const processedItems = items.map(item => {
+                const price = getProductRawPrice(item);
+                totalPrice += price;
+                return {
+                    ...item,
+                    trackingCode: 'MC-' + Math.floor(100000 + Math.random() * 900000)
+                };
+            });
+
+            const order = {
+                id: 'ORD-' + Date.now(),
+                items: processedItems,
+                totalPrice: totalPrice,
+                timestamp: new Date().toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' })
+            };
+
+            localStorage.setItem('active_order', JSON.stringify(order));
+            localStorage.removeItem('pending_order');
+
+            // Clear cart
+            currentUser.cart = [];
+            localStorage.setItem('app_user', JSON.stringify(currentUser));
+            try {
+                await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'syncCart', username: currentUser.username, cart: [] })
+                });
+            } catch(e) {}
+
+            // Send order summary and tracking codes to chat for both support & user
+            let orderTextSummary = `📦 ثبت سفارش جدید:\n` + processedItems.map(i => `- ${i.name} | قیمت: ${formatPrice(getProductRawPrice(i))} تومان | کد رهگیری: ${i.trackingCode}`).join('\n') + `\n💰 جمع کل: ${formatPrice(totalPrice)} تومان`;
+
+            try {
+                await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: currentUser.username,
+                        text: orderTextSummary,
+                        sender: 'user'
+                    })
+                });
+            } catch (err) {}
+
+            checkOrderPanel();
+            loadMessages();
+        }
+
+        // Cancel order and remove tracking codes
+        async function cancelActiveOrder() {
+            const activeOrderStr = localStorage.getItem('active_order');
+            if (!activeOrderStr || !currentUser) return;
+
+            localStorage.removeItem('active_order');
+
+            let cancelTextSummary = `❌ سفارش توسط کاربر لغو شد و کدهای رهگیری محصولات حذف گردیدند.`;
+
+            try {
+                await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        username: currentUser.username,
+                        text: cancelTextSummary,
+                        sender: 'user'
+                    })
+                });
+            } catch (err) {}
+
+            checkOrderPanel();
+            loadMessages();
         }
 
         async function loadMessages() {
@@ -100,11 +274,11 @@
                             contentHtml += `<div class="mb-2"><img src="${msg.imageUrl}" alt="تصویر" class="rounded-xl max-w-full max-h-60 object-cover cursor-pointer hover:opacity-95 transition" onclick="openImageModal('${msg.imageUrl}')"></div>`;
                         }
                         if (msg.text) {
-                            contentHtml += `<div>${msg.text}</div>`;
+                            contentHtml += `<div class="whitespace-pre-line">${msg.text}</div>`;
                         }
 
                         div.innerHTML = `
-                            <div class="${isUser ? 'bg-purple-600/80 text-white rounded-br-2xl' : 'bg-slate-800 text-emerald-300 border border-slate-700 rounded-bl-2xl'} p-3 rounded-2xl max-w-[80%] text-sm shadow">
+                            <div class="${isUser ? 'bg-purple-600/80 text-white rounded-br-2xl' : 'bg-slate-800 text-emerald-300 border border-slate-700 rounded-bl-2xl'} p-3 rounded-2xl max-w-[85%] text-sm shadow">
                                 ${contentHtml}
                             </div>
                             <span class="text-[10px] text-slate-500 mt-1 px-1">${msg.timestamp || ''}</span>
@@ -115,9 +289,7 @@
                 } else {
                     container.innerHTML = `<p class="text-center text-slate-500 text-xs py-8">هنوز پیامی ارسال نکرده‌اید. پیام خود را بفرستید.</p>`;
                 }
-            } catch (err) {
-                console.error("خطا در دریافت پیام‌ها:", err);
-            }
+            } catch (err) {}
         }
 
         async function sendMessage(e) {
@@ -156,7 +328,6 @@
             const reader = new FileReader();
             reader.onload = async function(uploadEvent) {
                 const base64Image = uploadEvent.target.result;
-                
                 const container = document.getElementById('chat-messages');
                 const loadingDiv = document.createElement('div');
                 loadingDiv.id = 'uploading-indicator';
@@ -172,10 +343,7 @@
                         body: JSON.stringify({ image: base64Image })
                     });
                     const uploadData = await uploadRes.json();
-
-                    if (!uploadData.success) {
-                        throw new Error(uploadData.error || 'خطا در آپلود عکس');
-                    }
+                    if (!uploadData.success) throw new Error(uploadData.error || 'خطا در آپلود عکس');
 
                     await fetch('/api/chat', {
                         method: 'POST',
@@ -217,3 +385,4 @@
     </script>
 </body>
 </html>
+ 
