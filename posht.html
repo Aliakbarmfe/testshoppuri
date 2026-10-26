@@ -40,13 +40,30 @@
         </div>
 
         <!-- INPUT FORM -->
-        <form onsubmit="sendMessage(event)" class="mt-4 pt-3 border-t border-slate-800 flex gap-2">
-            <input type="text" id="msg-input" placeholder="پیام خود را بنویسید..." required class="flex-grow bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500">
+        <form onsubmit="sendMessage(event)" class="mt-4 pt-3 border-t border-slate-800 flex items-center gap-2">
+            <input type="file" id="image-input" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+            <button type="button" onclick="document.getElementById('image-input').click()" class="bg-slate-800 hover:bg-slate-700 text-purple-400 p-3 rounded-xl transition flex items-center justify-center" title="ارسال عکس">
+                <i class="fa-solid fa-image text-lg"></i>
+            </button>
+            <input type="text" id="msg-input" placeholder="پیام خود را بنویسید..." class="flex-grow bg-slate-800 border border-slate-700 text-white text-sm rounded-xl px-4 py-3 focus:outline-none focus:border-purple-500">
             <button type="submit" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-5 py-3 rounded-xl transition flex items-center justify-center">
                 <i class="fa-solid fa-paper-plane"></i>
             </button>
         </form>
     </main>
+
+    <!-- IMAGE MODAL (LIGHTBOX) -->
+    <div id="image-modal" class="fixed inset-0 z-50 bg-black/90 hidden flex items-center justify-center p-4">
+        <div class="relative max-w-4xl max-h-[90vh] flex flex-col items-center">
+            <button onclick="closeImageModal()" class="absolute -top-12 left-0 text-white text-xl bg-slate-800 hover:bg-slate-700 w-10 h-10 rounded-full flex items-center justify-center transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <img id="modal-img" src="" alt="تصویر بزرگ" class="max-w-full max-h-[75vh] object-contain rounded-xl shadow-2xl mb-4">
+            <a id="modal-download-btn" href="" download target="_blank" class="bg-purple-600 hover:bg-purple-500 text-white font-bold px-6 py-2.5 rounded-xl text-sm flex items-center gap-2 transition shadow-lg">
+                <i class="fa-solid fa-download"></i> دانلود عکس
+            </a>
+        </div>
+    </div>
 
     <script>
         let currentUser = null;
@@ -61,7 +78,7 @@
             currentUser = JSON.parse(saved);
             document.getElementById('user-info').innerText = `کاربر: ${currentUser.username}`;
             loadMessages();
-            setInterval(loadMessages, 3000); // به‌روزرسانی خودکار پیام‌ها
+            setInterval(loadMessages, 3000);
         }
 
         async function loadMessages() {
@@ -77,9 +94,18 @@
                         const isUser = msg.sender === 'user';
                         const div = document.createElement('div');
                         div.className = `flex flex-col ${isUser ? 'items-start' : 'items-end'}`;
+                        
+                        let contentHtml = '';
+                        if (msg.imageUrl) {
+                            contentHtml += `<div class="mb-2"><img src="${msg.imageUrl}" alt="تصویر" class="rounded-xl max-w-full max-h-60 object-cover cursor-pointer hover:opacity-95 transition" onclick="openImageModal('${msg.imageUrl}')"></div>`;
+                        }
+                        if (msg.text) {
+                            contentHtml += `<div>${msg.text}</div>`;
+                        }
+
                         div.innerHTML = `
                             <div class="${isUser ? 'bg-purple-600/80 text-white rounded-br-2xl' : 'bg-slate-800 text-emerald-300 border border-slate-700 rounded-bl-2xl'} p-3 rounded-2xl max-w-[80%] text-sm shadow">
-                                ${msg.text}
+                                ${contentHtml}
                             </div>
                             <span class="text-[10px] text-slate-500 mt-1 px-1">${msg.timestamp || ''}</span>
                         `;
@@ -116,6 +142,75 @@
             } catch (err) {
                 alert("خطا در ارسال پیام.");
             }
+        }
+
+        async function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (!file || !currentUser) return;
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert("حجم عکس نباید بیشتر از ۵ مگابایت باشد.");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = async function(uploadEvent) {
+                const base64Image = uploadEvent.target.result;
+                
+                const container = document.getElementById('chat-messages');
+                const loadingDiv = document.createElement('div');
+                loadingDiv.id = 'uploading-indicator';
+                loadingDiv.className = 'flex flex-col items-start';
+                loadingDiv.innerHTML = `<div class="bg-slate-800 text-purple-400 p-3 rounded-2xl text-xs flex items-center gap-2"><i class="fa-solid fa-spinner fa-spin"></i> در حال آپلود و ارسال عکس...</div>`;
+                container.appendChild(loadingDiv);
+                container.scrollTop = container.scrollHeight;
+
+                try {
+                    const uploadRes = await fetch('/api/upload', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ image: base64Image })
+                    });
+                    const uploadData = await uploadRes.json();
+
+                    if (!uploadData.success) {
+                        throw new Error(uploadData.error || 'خطا در آپلود عکس');
+                    }
+
+                    await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            username: currentUser.username,
+                            text: '',
+                            imageUrl: uploadData.url,
+                            sender: 'user'
+                        })
+                    });
+
+                    document.getElementById('uploading-indicator')?.remove();
+                    e.target.value = '';
+                    loadMessages();
+                } catch (err) {
+                    document.getElementById('uploading-indicator')?.remove();
+                    alert("خطا در ارسال عکس: " + err.message);
+                    e.target.value = '';
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function openImageModal(url) {
+            const modal = document.getElementById('image-modal');
+            const modalImg = document.getElementById('modal-img');
+            const downloadBtn = document.getElementById('modal-download-btn');
+            modalImg.src = url;
+            downloadBtn.href = url;
+            modal.classList.remove('hidden');
+        }
+
+        function closeImageModal() {
+            document.getElementById('image-modal').classList.add('hidden');
         }
 
         window.onload = checkUser;
