@@ -181,20 +181,40 @@
             }
         }
 
-        // Send cart products (with photos, descriptions, prices, tracking codes) to support chat
+        // Send cart products (with photos, descriptions, prices and purely numeric tracking codes) to support chat
         async function sendCartOrderToSupport() {
             const pendingOrderStr = localStorage.getItem('pending_order');
             if (!pendingOrderStr || !currentUser) return;
 
             const items = JSON.parse(pendingOrderStr);
             let totalPrice = 0;
+            items.forEach(item => {
+                totalPrice += getProductRawPrice(item);
+            });
 
-            const processedItems = items.map(item => {
-                const price = getProductRawPrice(item);
-                totalPrice += price;
+            // دریافت کدهای رهگیری عددی و ترتیبی از API جدید
+            let trackingCodes = [];
+            try {
+                const res = await fetch('/api/tracking_code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ count: items.length })
+                });
+                const data = await res.json();
+                if (data.success && data.codes) {
+                    trackingCodes = data.codes;
+                } else {
+                    throw new Error(data.error || 'خطا در دریافت کد رهگیری');
+                }
+            } catch (err) {
+                alert("خطا در دریافت کد رهگیری: " + err.message);
+                return;
+            }
+
+            const processedItems = items.map((item, index) => {
                 return {
                     ...item,
-                    trackingCode: 'MC-' + Math.floor(100000 + Math.random() * 900000)
+                    trackingCode: trackingCodes[index] || (1000 + index).toString()
                 };
             });
 
@@ -219,7 +239,7 @@
                 });
             } catch(e) {}
 
-            // Build rich HTML summary containing product photos, descriptions, prices and tracking codes for the chat
+            // Build rich HTML summary containing product photos, descriptions, prices and purely numeric tracking codes for the chat
             let orderHtmlSummary = `📦 <b>ثبت سفارش جدید از سبد خرید:</b><br><div class="space-y-2 mt-2">`;
             processedItems.forEach(item => {
                 const rawPrice = getProductRawPrice(item);
@@ -255,7 +275,7 @@
             loadMessages();
         }
 
-        // Cancel order and remove tracking codes
+        // Cancel order
         async function cancelActiveOrder() {
             const activeOrderStr = localStorage.getItem('active_order');
             if (!activeOrderStr || !currentUser) return;
