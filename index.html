@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="fa" dir="rtl" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>مارول سیتی - فروشگاه گیمینگ و خدمات آنلاین</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -33,25 +33,41 @@
         }
     </script>
     <style>
-        body {
+        html, body {
             font-family: 'Vazirmatn', sans-serif;
             color: #f1f5f9;
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            transition: background-image 0.4s ease-in-out;
             background-color: #0f172a;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
         }
+
+        /* ثابت نگه داشتن پس‌زمینه بدون افت کیفیت و هنگی در موبایل */
+        #bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            background-size: cover;
+            background-position: center center;
+            background-repeat: no-repeat;
+            transition: background-image 0.5s ease-in-out;
+            will-change: background-image;
+            transform: translateZ(0);
+        }
+
         .neon-border {
             box-shadow: 0 0 15px rgba(124, 58, 237, 0.4);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
         }
         .neon-border:hover {
             box-shadow: 0 0 25px rgba(236, 72, 153, 0.7);
         }
         .glass-card {
-            background: rgba(30, 41, 59, 0.7);
+            background: rgba(30, 41, 59, 0.75);
             backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
         .no-scrollbar::-webkit-scrollbar {
@@ -61,6 +77,24 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        /* انیمیشن نرم ورود کارت‌ها */
+        .fade-in-up {
+            animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            will-change: transform, opacity;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* انیمیشن نرم توست اعلان */
         @keyframes toastIn {
             from { transform: translate(-50%, -100%); opacity: 0; }
             to { transform: translate(-50%, 0); opacity: 1; }
@@ -73,16 +107,19 @@
             animation: toastIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
         .animate-toast-out {
-            animation: toastOut 0.3s ease-in forwards;
+            animation: toastOut 0.4s ease-in forwards;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between overflow-x-hidden selection:bg-purple-600 selection:text-white relative">
+<body class="min-h-screen flex flex-col justify-between selection:bg-purple-600 selection:text-white relative">
+
+    <!-- LAYER FOR FIXED BACKGROUND (PREVENTS JITTER ON MOBILE) -->
+    <div id="bg-overlay"></div>
 
     <!-- FLOATING SUPPORT BUTTON -->
-    <button onclick="goToSupportPage()" class="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold px-5 py-3.5 rounded-full shadow-2xl flex items-center gap-3 transition-all duration-300 hover:scale-105 border border-purple-400/30">
-        <i class="fa-solid fa-headset text-xl"></i>
-        <span class="text-sm">پشتیبانی</span>
+    <button onclick="goToSupportPage()" class="fixed bottom-6 right-6 z-50 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold px-4 sm:px-5 py-3 sm:py-3.5 rounded-full shadow-2xl flex items-center gap-2 sm:gap-3 transition-all duration-300 hover:scale-105 active:scale-95 border border-purple-400/30">
+        <i class="fa-solid fa-headset text-lg sm:text-xl"></i>
+        <span class="text-xs sm:text-sm">پشتیبانی</span>
     </button>
 
     <!-- NOTIFICATION TOAST -->
@@ -99,18 +136,18 @@
     </div>
 
     <!-- HEADER NAVIGATION -->
-    <header class="sticky top-0 z-40 glass-card border-b border-slate-800 px-4 py-3 shadow-xl">
+    <header class="sticky top-0 z-40 glass-card border-b border-slate-800 px-3 sm:px-4 py-3 shadow-xl">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <button onclick="handleProfileHeaderClick()" class="flex items-center gap-2 bg-slate-800/80 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 hover:border-purple-500 px-3 py-2 rounded-xl transition duration-300 group">
                     <div class="w-8 h-8 rounded-full bg-purple-600/40 flex items-center justify-center text-purple-200 group-hover:bg-purple-500 group-hover:text-white transition">
-                        <i class="fa-solid fa-user"></i>
+                        <i class="fa-solid fa-user text-xs sm:text-sm"></i>
                     </div>
                     <span id="user-display-name" class="text-xs sm:text-sm font-semibold">حساب کاربری / ثبت نام</span>
                 </button>
             </div>
             <div class="flex items-center gap-3">
-                <span class="font-black text-xl bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">
+                <span class="font-black text-lg sm:text-xl bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 bg-clip-text text-transparent">
                     مارول سیتی
                 </span>
             </div>
@@ -118,16 +155,16 @@
 
         <div class="max-w-7xl mx-auto mt-3 pt-2 border-t border-slate-800/60">
             <nav class="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto no-scrollbar pb-1">
-                <button onclick="setActiveTab('home')" id="tab-home" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-600/30">
+                <button onclick="setActiveTab('home')" id="tab-home" class="tab-btn px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-600/30">
                     <i class="fa-solid fa-house ml-1"></i> صفحه اصلی
                 </button>
-                <button onclick="setActiveTab('cod')" id="tab-cod" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+                <button onclick="setActiveTab('cod')" id="tab-cod" class="tab-btn px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
                     <i class="fa-solid fa-gamepad ml-1"></i> کالاف دیوتی موبایل
                 </button>
-                <button onclick="setActiveTab('cp')" id="tab-cp" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+                <button onclick="setActiveTab('cp')" id="tab-cp" class="tab-btn px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
                     <i class="fa-solid fa-coins ml-1"></i> خرید سیپی
                 </button>
-                <button onclick="setActiveTab('gap_channel')" id="tab-gap_channel" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+                <button onclick="setActiveTab('gap_channel')" id="tab-gap_channel" class="tab-btn px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
                     <i class="fa-solid fa-comments ml-1"></i> گپ چنل
                 </button>
             </nav>
@@ -135,17 +172,17 @@
     </header>
 
     <!-- MAIN SECTION -->
-    <main class="max-w-7xl mx-auto px-4 py-6 w-full flex-grow">
+    <main class="max-w-7xl mx-auto px-3 sm:px-4 py-5 sm:py-6 w-full flex-grow">
         <div class="flex items-center justify-between mb-6">
             <div>
-                <h1 id="page-title" class="text-2xl sm:text-3xl font-extrabold text-white flex items-center gap-2">
-                    <span class="w-3 h-8 bg-purple-500 rounded-full inline-block"></span>
+                <h1 id="page-title" class="text-xl sm:text-3xl font-extrabold text-white flex items-center gap-2">
+                    <span class="w-2.5 sm:w-3 h-6 sm:h-8 bg-purple-500 rounded-full inline-block"></span>
                     محصولات آفر‌دار و ویژه
                 </h1>
-                <p id="page-subtitle" class="text-xs sm:text-sm text-slate-400 mt-1">تخفیف‌های داغ و محدود تمامی بخش‌ها</p>
+                <p id="page-subtitle" class="text-[11px] sm:text-sm text-slate-400 mt-1">تخفیف‌های داغ و محدود تمامی بخش‌ها</p>
             </div>
             
-            <button onclick="toggleCartModal()" class="relative bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold px-4 py-2 rounded-xl shadow-lg shadow-amber-500/20 flex items-center gap-2 transition">
+            <button onclick="toggleCartModal()" class="relative bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-slate-950 font-bold px-3.5 sm:px-4 py-2 rounded-xl shadow-lg shadow-amber-500/20 flex items-center gap-2 transition active:scale-95">
                 <i class="fa-solid fa-cart-shopping"></i>
                 <span class="hidden sm:inline">سبد خرید</span>
                 <span id="cart-count" class="bg-slate-950 text-amber-400 text-xs w-5 h-5 rounded-full flex items-center justify-center font-black">0</span>
@@ -190,7 +227,7 @@
 
     <!-- ENTRY / CHOICE AUTH POPUP MODAL -->
     <div id="auth-choice-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-purple-500/30 w-full max-w-sm rounded-3xl p-6 shadow-2xl relative text-center">
+        <div class="bg-slate-900 border border-purple-500/30 w-full max-w-sm rounded-3xl p-6 shadow-2xl relative text-center fade-in-up">
             <div class="w-16 h-16 rounded-full bg-purple-600/30 border border-purple-500/40 mx-auto flex items-center justify-center text-purple-300 text-2xl mb-4">
                 <i class="fa-solid fa-user-shield"></i>
             </div>
@@ -213,7 +250,7 @@
 
     <!-- FORM AUTH MODAL -->
     <div id="auth-form-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-purple-500/30 w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
+        <div class="bg-slate-900 border border-purple-500/30 w-full max-w-md rounded-3xl p-6 shadow-2xl relative fade-in-up">
             <button onclick="closeAuthFormModal()" class="absolute top-4 left-4 text-slate-400 hover:text-white text-lg w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -242,7 +279,7 @@
 
     <!-- PROFILE MANAGEMENT MODAL -->
     <div id="profile-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-purple-500/30 w-full max-w-md rounded-3xl p-6 shadow-2xl relative">
+        <div class="bg-slate-900 border border-purple-500/30 w-full max-w-md rounded-3xl p-6 shadow-2xl relative fade-in-up">
             <button onclick="toggleProfileModal()" class="absolute top-4 left-4 text-slate-400 hover:text-white text-lg w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -279,7 +316,7 @@
 
     <!-- PRODUCT DETAILS MODAL -->
     <div id="product-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-purple-500/30 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        <div class="bg-slate-900 border border-purple-500/30 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto fade-in-up">
             <button onclick="toggleProductModal()" class="absolute top-4 left-4 text-slate-400 hover:text-white text-lg w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center z-10">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -289,7 +326,7 @@
 
     <!-- SHOPPING CART MODAL -->
     <div id="cart-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-amber-500/30 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative flex flex-col max-h-[85vh]">
+        <div class="bg-slate-900 border border-amber-500/30 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative flex flex-col max-h-[85vh] fade-in-up">
             <button onclick="toggleCartModal()" class="absolute top-4 left-4 text-slate-400 hover:text-white text-lg w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center">
                 <i class="fa-solid fa-xmark"></i>
             </button>
@@ -307,7 +344,7 @@
                     <span>مبلغ قابل پرداخت:</span>
                     <span id="cart-total-price" class="text-lg text-amber-400">۰ تومان</span>
                 </div>
-                <button onclick="finalizeOrder()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black py-3 rounded-xl text-base transition shadow-lg shadow-emerald-500/20">
+                <button onclick="finalizeOrder()" class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black py-3 rounded-xl text-base transition shadow-lg shadow-emerald-500/20 active:scale-95">
                     ثبت نهایی سفارش
                 </button>
             </div>
@@ -394,6 +431,7 @@
             } catch (e) {}
         }
 
+        /* اصلاح زمان اعلان به 5 ثانیه (5000 میلی‌ثانیه) */
         function showNotificationToast(msg) {
             playNotificationSound();
             const toast = document.getElementById('notification-toast');
@@ -406,8 +444,8 @@
             toastTimeout = setTimeout(() => {
                 toast.classList.remove('animate-toast-in');
                 toast.classList.add('animate-toast-out');
-                setTimeout(() => { toast.classList.add('hidden'); }, 300);
-            }, 3000);
+                setTimeout(() => { toast.classList.add('hidden'); }, 400);
+            }, 5000);
         }
 
         function checkUserSession() {
@@ -673,9 +711,13 @@
             }
         }
 
+        /* بهینه‌سازی تغییر پس‌زمینه بدون زوم و لرزش در اسکرول */
         function updateBackground(tab) {
             const bgImage = tabBackgrounds[tab] || tabBackgrounds['home'];
-            document.body.style.backgroundImage = `linear-gradient(rgba(124, 58, 237, 0.15), rgba(124, 58, 237, 0.15)), url('${bgImage}')`;
+            const bgOverlay = document.getElementById('bg-overlay');
+            if (bgOverlay) {
+                bgOverlay.style.backgroundImage = `linear-gradient(rgba(124, 58, 237, 0.15), rgba(124, 58, 237, 0.15)), url('${bgImage}')`;
+            }
         }
 
         function renderProducts() {
@@ -694,10 +736,11 @@
                 return;
             }
 
-            productKeys.forEach(key => {
+            productKeys.forEach((key, index) => {
                 const product = productsObj[key];
                 const card = document.createElement('div');
-                card.className = "glass-card rounded-2xl overflow-hidden border border-slate-800 hover:border-purple-500/50 transition-all duration-300 flex flex-col justify-between neon-border cursor-pointer";
+                card.className = "glass-card rounded-2xl overflow-hidden border border-slate-800 hover:border-purple-500/50 transition-all duration-300 flex flex-col justify-between neon-border cursor-pointer fade-in-up active:scale-[0.99]";
+                card.style.animationDelay = `${index * 0.06}s`;
                 card.onclick = () => openProductDetails(product);
 
                 let priceHTML = '';
@@ -705,33 +748,33 @@
                     priceHTML = `
                         <div class="flex items-center gap-2">
                             <span class="text-xs text-slate-500 line-through">${formatPrice(product.priceMain)} تومان</span>
-                            <span class="text-lg sm:text-xl font-extrabold text-amber-400">${formatPrice(product.priceDiscount)} تومان</span>
+                            <span class="text-base sm:text-xl font-extrabold text-amber-400">${formatPrice(product.priceDiscount)} تومان</span>
                         </div>
                     `;
                 } else {
                     priceHTML = `
                         <div class="flex items-center gap-2">
-                            <span class="text-sm sm:text-base font-extrabold text-amber-400">${formatPrice(product.priceSingle)} تومان</span>
+                            <span class="text-xs sm:text-base font-extrabold text-amber-400">${formatPrice(product.priceSingle)} تومان</span>
                         </div>
                     `;
                 }
 
                 card.innerHTML = `
                     <div>
-                        <div class="relative h-44 sm:h-48 overflow-hidden">
+                        <div class="relative h-40 sm:h-48 overflow-hidden">
                             <img src="${product.mainImg || ''}" alt="${product.name || ''}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/400x300/1e293b/a855f7?text=Marvel+City'">
                             ${product.tag ? `<span class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-purple-600/90 text-white text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full shadow-md">${product.tag}</span>` : ''}
                         </div>
-                        <div class="p-4 sm:p-5">
-                            <h3 class="font-bold text-base sm:text-lg text-white mb-2">${product.name || 'بدون نام'}</h3>
+                        <div class="p-3.5 sm:p-5">
+                            <h3 class="font-bold text-sm sm:text-lg text-white mb-2 line-clamp-1">${product.name || 'بدون نام'}</h3>
                             ${priceHTML}
                         </div>
                     </div>
-                    <div class="p-4 sm:p-5 pt-0 flex gap-2">
-                        <button onclick="event.stopPropagation(); addToCart(${JSON.stringify(product).replace(/"/g, '&quot;')})" class="flex-1 bg-slate-800 hover:bg-slate-700 text-purple-300 font-bold py-2.5 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1 transition">
+                    <div class="p-3.5 sm:p-5 pt-0 flex gap-2">
+                        <button onclick="event.stopPropagation(); addToCart(${JSON.stringify(product).replace(/"/g, '&quot;')})" class="flex-1 bg-slate-800 hover:bg-slate-700 text-purple-300 font-bold py-2.5 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1 transition active:scale-95">
                             <i class="fa-solid fa-cart-plus"></i> افزودن
                         </button>
-                        <button onclick="event.stopPropagation(); requireAuthAction(() => { addToCart(${JSON.stringify(product).replace(/"/g, '&quot;')}); toggleCartModal(); })" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1 transition">
+                        <button onclick="event.stopPropagation(); requireAuthAction(() => { addToCart(${JSON.stringify(product).replace(/"/g, '&quot;')}); toggleCartModal(); })" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1 transition active:scale-95">
                             ثبت سفارش
                         </button>
                     </div>
@@ -746,7 +789,7 @@
             if (product.extraImgs) {
                 const imgsArray = Array.isArray(product.extraImgs) ? product.extraImgs : Object.values(product.extraImgs);
                 if (imgsArray.length > 0) {
-                    let slides = imgsArray.map(img => `<img src="${img}" class="w-40 h-28 object-cover rounded-xl border border-slate-700 flex-shrink-0" onerror="this.src='https://placehold.co/200x150/1e293b/a855f7?text=Marvel+City'">`).join('');
+                    let slides = imgsArray.map(img => `<img src="${img}" class="w-36 sm:w-40 h-24 sm:h-28 object-cover rounded-xl border border-slate-700 flex-shrink-0" onerror="this.src='https://placehold.co/200x150/1e293b/a855f7?text=Marvel+City'">`).join('');
                     extraImagesHTML = `
                         <div class="mt-4">
                             <label class="block text-xs font-semibold text-slate-400 mb-2">تصاویر بیشتر (اسکرول افقی)</label>
@@ -762,30 +805,30 @@
             if (currentTab === 'home') {
                 priceDisplayHTML = `
                     <div class="flex items-center gap-3">
-                        <span class="text-sm text-slate-500 line-through">${formatPrice(product.priceMain)} تومان</span>
-                        <span class="text-xl font-extrabold text-amber-400">${formatPrice(product.priceDiscount)} تومان</span>
+                        <span class="text-xs sm:text-sm text-slate-500 line-through">${formatPrice(product.priceMain)} تومان</span>
+                        <span class="text-lg sm:text-xl font-extrabold text-amber-400">${formatPrice(product.priceDiscount)} تومان</span>
                     </div>
                 `;
             } else {
                 priceDisplayHTML = `
-                    <span class="text-lg font-extrabold text-amber-400">${formatPrice(product.priceSingle)} تومان</span>
+                    <span class="text-base sm:text-lg font-extrabold text-amber-400">${formatPrice(product.priceSingle)} تومان</span>
                 `;
             }
 
             modalContent.innerHTML = `
                 <div class="space-y-4">
-                    <div class="relative h-56 rounded-2xl overflow-hidden border border-slate-700">
+                    <div class="relative h-48 sm:h-56 rounded-2xl overflow-hidden border border-slate-700">
                         <img src="${product.mainImg || ''}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/600x400/1e293b/a855f7?text=Marvel+City'">
                         ${product.tag ? `<span class="absolute top-3 right-3 bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full">${product.tag}</span>` : ''}
                     </div>
                     <div>
-                        <h2 class="text-xl font-bold text-white mb-2">${product.name || ''}</h2>
+                        <h2 class="text-lg sm:text-xl font-bold text-white mb-2">${product.name || ''}</h2>
                         ${priceDisplayHTML}
                     </div>
                     ${extraImagesHTML}
                     <div>
                         <label class="block text-xs font-semibold text-slate-400 mb-1">توضیحات</label>
-                        <p class="text-sm text-slate-300 bg-slate-800/60 p-3 rounded-xl border border-slate-700/50 leading-relaxed">${product.desc || 'توضیحاتی موجود نیست.'}</p>
+                        <p class="text-xs sm:text-sm text-slate-300 bg-slate-800/60 p-3 rounded-xl border border-slate-700/50 leading-relaxed">${product.desc || 'توضیحاتی موجود نیست.'}</p>
                     </div>
                     <div class="bg-slate-800/80 p-4 rounded-xl border border-slate-700 space-y-2">
                         <div class="flex justify-between text-xs sm:text-sm">
@@ -798,10 +841,10 @@
                         </div>
                     </div>
                     <div class="flex gap-3 pt-2">
-                        <button id="modal-add-btn" class="flex-1 bg-slate-800 hover:bg-slate-700 text-purple-300 font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2 transition">
+                        <button id="modal-add-btn" class="flex-1 bg-slate-800 hover:bg-slate-700 text-purple-300 font-bold py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 transition active:scale-95">
                             <i class="fa-solid fa-cart-plus"></i> افزودن به سبد خرید
                         </button>
-                        <button id="modal-order-btn" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-xl text-sm flex items-center justify-center gap-2 transition">
+                        <button id="modal-order-btn" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-2 transition active:scale-95">
                             ثبت سفارش
                         </button>
                     </div>
@@ -842,11 +885,11 @@
             currentTab = tab;
             updateBackground(tab);
             document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.className = "tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700";
+                btn.className = "tab-btn px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700";
             });
             const activeBtn = document.getElementById(`tab-${tab}`);
             if (activeBtn) {
-                activeBtn.className = "tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-600/30";
+                activeBtn.className = "tab-btn px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-600/30";
             }
 
             const pageTitle = document.getElementById('page-title');
@@ -854,21 +897,21 @@
             const container = document.getElementById('products-container');
 
             if (tab === 'home') {
-                pageTitle.innerHTML = `<span class="w-3 h-8 bg-purple-500 rounded-full inline-block"></span> محصولات آفر‌دار و ویژه`;
+                pageTitle.innerHTML = `<span class="w-2.5 sm:w-3 h-6 sm:h-8 bg-purple-500 rounded-full inline-block"></span> محصولات آفر‌دار و ویژه`;
                 pageSubtitle.innerText = "تخفیف‌های داغ و محدود تمامی بخش‌ها";
                 container.className = "grid grid-cols-1 gap-4 sm:gap-6";
             } else if (tab === 'cod') {
-                pageTitle.innerHTML = `<span class="w-3 h-8 bg-blue-500 rounded-full inline-block"></span> بخش کالاف دیوتی موبایل`;
+                pageTitle.innerHTML = `<span class="w-2.5 sm:w-3 h-6 sm:h-8 bg-blue-500 rounded-full inline-block"></span> بخش کالاف دیوتی موبایل`;
                 pageSubtitle.innerText = "خرید اکانت، بتل پاس و خدمات کالاف";
                 container.className = "grid grid-cols-1 gap-4 sm:gap-6";
             } else if (tab === 'cp') {
-                pageTitle.innerHTML = `<span class="w-3 h-8 bg-amber-500 rounded-full inline-block"></span> خرید سیپی (CP)`;
+                pageTitle.innerHTML = `<span class="w-2.5 sm:w-3 h-6 sm:h-8 bg-amber-500 rounded-full inline-block"></span> خرید سیپی (CP)`;
                 pageSubtitle.innerText = "شارژ سریع سیپی با نازل‌ترین قیمت";
-                container.className = "grid grid-cols-2 gap-4 sm:gap-6";
+                container.className = "grid grid-cols-2 gap-3 sm:gap-6";
             } else if (tab === 'gap_channel') {
-                pageTitle.innerHTML = `<span class="w-3 h-8 bg-pink-500 rounded-full inline-block"></span> خدمات گپ و چنل`;
+                pageTitle.innerHTML = `<span class="w-2.5 sm:w-3 h-6 sm:h-8 bg-pink-500 rounded-full inline-block"></span> خدمات گپ و چنل`;
                 pageSubtitle.innerText = "اشتراک‌ها، تبلیغات و خدمات چنل‌ها";
-                container.className = "grid grid-cols-2 gap-4 sm:gap-6";
+                container.className = "grid grid-cols-2 gap-3 sm:gap-6";
             }
             renderProducts();
         }
@@ -893,4 +936,3 @@
     </script>
 </body>
 </html>
- 
