@@ -102,7 +102,7 @@
             return parseInt(numStr, 10) || 0;
         }
 
-        // Display pending order from cart or active submitted order with tracking codes
+        // Display pending order or active order with images, descriptions, prices and tracking codes
         function checkOrderPanel() {
             const panel = document.getElementById('order-panel');
             const pendingOrderStr = localStorage.getItem('pending_order');
@@ -111,11 +111,15 @@
             if (activeOrderStr) {
                 const order = JSON.parse(activeOrderStr);
                 let itemsHtml = order.items.map(item => `
-                    <div class="flex justify-between items-center text-xs py-1 border-b border-slate-700/50">
-                        <span class="text-white font-semibold">${item.name}</span>
-                        <div class="text-left">
-                            <span class="text-amber-400 ml-2">${formatPrice(getProductRawPrice(item))} تومان</span>
-                            <span class="bg-purple-600/30 text-purple-300 px-2 py-0.5 rounded font-mono text-[10px]">کد رهگیری: ${item.trackingCode || 'حذف شده'}</span>
+                    <div class="flex items-center gap-3 bg-slate-900/60 p-2.5 rounded-xl border border-slate-700/60">
+                        <img src="${item.mainImg || ''}" class="w-12 h-12 object-cover rounded-lg flex-shrink-0" onerror="this.src='https://placehold.co/100x100/1e293b/a855f7?text=Product'">
+                        <div class="flex-grow">
+                            <h5 class="font-bold text-white text-xs">${item.name || ''}</h5>
+                            <p class="text-[11px] text-slate-300 line-clamp-1">${item.desc || 'بدون توضیحات'}</p>
+                            <div class="flex justify-between items-center mt-1 text-[11px]">
+                                <span class="text-amber-400 font-semibold">${formatPrice(getProductRawPrice(item))} تومان</span>
+                                <span class="bg-purple-600/30 text-purple-300 px-2 py-0.5 rounded font-mono text-[10px]">کد رهگیری: ${item.trackingCode || 'حذف شده'}</span>
+                            </div>
                         </div>
                     </div>
                 `).join('');
@@ -126,7 +130,7 @@
                         <h3 class="text-sm font-bold text-emerald-400"><i class="fa-solid fa-circle-check ml-1"></i> سفارش ارسال شده برای پشتیبانی</h3>
                         <span class="text-[10px] text-slate-400">${order.timestamp}</span>
                     </div>
-                    <div class="space-y-1 mb-3 max-h-32 overflow-y-auto pr-1">${itemsHtml}</div>
+                    <div class="space-y-2 mb-3 max-h-40 overflow-y-auto pr-1">${itemsHtml}</div>
                     <div class="flex justify-between items-center text-xs font-bold text-slate-300 pt-2 border-t border-slate-700">
                         <span>مجموع کل: <span class="text-amber-400">${formatPrice(order.totalPrice)} تومان</span></span>
                         <button onclick="cancelActiveOrder()" class="bg-rose-600/20 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/30 px-3 py-1.5 rounded-xl transition text-xs font-bold flex items-center gap-1">
@@ -147,9 +151,13 @@
                     const rawPrice = getProductRawPrice(item);
                     totalPrice += rawPrice;
                     return `
-                        <div class="flex justify-between items-center text-xs py-1 border-b border-slate-700/50">
-                            <span class="text-white font-semibold">${item.name || 'محصول'}</span>
-                            <span class="text-amber-400">${formatPrice(rawPrice)} تومان</span>
+                        <div class="flex items-center gap-3 bg-slate-900/60 p-2.5 rounded-xl border border-slate-700/60">
+                            <img src="${item.mainImg || ''}" class="w-12 h-12 object-cover rounded-lg flex-shrink-0" onerror="this.src='https://placehold.co/100x100/1e293b/a855f7?text=Product'">
+                            <div class="flex-grow">
+                                <h5 class="font-bold text-white text-xs">${item.name || ''}</h5>
+                                <p class="text-[11px] text-slate-300 line-clamp-1">${item.desc || 'بدون توضیحات'}</p>
+                                <span class="text-amber-400 font-semibold text-[11px]">${formatPrice(rawPrice)} تومان</span>
+                            </div>
                         </div>
                     `;
                 }).join('');
@@ -159,7 +167,7 @@
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="text-sm font-bold text-purple-400"><i class="fa-solid fa-basket-shopping ml-1"></i> محصولات سبد خرید (آماده ارسال)</h3>
                     </div>
-                    <div class="space-y-1 mb-3 max-h-32 overflow-y-auto pr-1">${itemsHtml}</div>
+                    <div class="space-y-2 mb-3 max-h-40 overflow-y-auto pr-1">${itemsHtml}</div>
                     <div class="flex justify-between items-center text-xs font-bold text-slate-300 pt-2 border-t border-slate-700">
                         <span>مجموع کل: <span class="text-amber-400">${formatPrice(totalPrice)} تومان</span></span>
                         <button onclick="sendCartOrderToSupport()" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white px-4 py-2 rounded-xl transition text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-purple-600/30">
@@ -173,7 +181,7 @@
             }
         }
 
-        // Send cart products to support with auto-generated tracking codes for each product
+        // Send cart products (with photos, descriptions, prices, tracking codes) to support chat
         async function sendCartOrderToSupport() {
             const pendingOrderStr = localStorage.getItem('pending_order');
             if (!pendingOrderStr || !currentUser) return;
@@ -211,8 +219,25 @@
                 });
             } catch(e) {}
 
-            // Send order summary and tracking codes to chat for both support & user
-            let orderTextSummary = `📦 ثبت سفارش جدید:\n` + processedItems.map(i => `- ${i.name} | قیمت: ${formatPrice(getProductRawPrice(i))} تومان | کد رهگیری: ${i.trackingCode}`).join('\n') + `\n💰 جمع کل: ${formatPrice(totalPrice)} تومان`;
+            // Build rich HTML summary containing product photos, descriptions, prices and tracking codes for the chat
+            let orderHtmlSummary = `📦 <b>ثبت سفارش جدید از سبد خرید:</b><br><div class="space-y-2 mt-2">`;
+            processedItems.forEach(item => {
+                const rawPrice = getProductRawPrice(item);
+                orderHtmlSummary += `
+                    <div class="bg-slate-900/80 p-2.5 rounded-xl border border-slate-700 flex items-center gap-3">
+                        <img src="${item.mainImg || ''}" class="w-14 h-14 object-cover rounded-lg flex-shrink-0" onerror="this.src='https://placehold.co/100x100/1e293b/a855f7?text=Product'">
+                        <div class="flex-grow">
+                            <h5 class="font-bold text-white text-xs">${item.name || ''}</h5>
+                            <p class="text-[11px] text-slate-300 line-clamp-1 mt-0.5">${item.desc || 'بدون توضیحات'}</p>
+                            <div class="flex justify-between items-center mt-1 text-[11px]">
+                                <span class="text-amber-400 font-semibold">${formatPrice(rawPrice)} تومان</span>
+                                <span class="bg-purple-600/30 text-purple-300 px-2 py-0.5 rounded font-mono text-[10px]">کد رهگیری: ${item.trackingCode}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            orderHtmlSummary += `</div><div class="mt-3 pt-2 border-t border-slate-700 flex justify-between items-center text-xs font-bold"><span>مجموع کل:</span><span class="text-amber-400 text-sm">${formatPrice(totalPrice)} تومان</span></div>`;
 
             try {
                 await fetch('/api/chat', {
@@ -220,7 +245,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         username: currentUser.username,
-                        text: orderTextSummary,
+                        text: orderHtmlSummary,
                         sender: 'user'
                     })
                 });
@@ -274,7 +299,7 @@
                             contentHtml += `<div class="mb-2"><img src="${msg.imageUrl}" alt="تصویر" class="rounded-xl max-w-full max-h-60 object-cover cursor-pointer hover:opacity-95 transition" onclick="openImageModal('${msg.imageUrl}')"></div>`;
                         }
                         if (msg.text) {
-                            contentHtml += `<div class="whitespace-pre-line">${msg.text}</div>`;
+                            contentHtml += `<div>${msg.text}</div>`;
                         }
 
                         div.innerHTML = `
