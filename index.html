@@ -304,6 +304,21 @@
         </div>
     </div>
 
+    <!-- IMAGE LIGHTBOX / ZOOM MODAL -->
+    <div id="image-lightbox-modal" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden flex flex-col items-center justify-center p-4">
+        <button onclick="closeLightbox()" class="absolute top-6 left-6 text-slate-300 hover:text-white text-xl w-10 h-10 rounded-full bg-slate-800/80 flex items-center justify-center z-10 transition">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <div class="max-w-4xl max-h-[75vh] flex items-center justify-center overflow-hidden">
+            <img id="lightbox-img" src="" class="max-w-full max-h-[70vh] object-contain rounded-2xl border border-slate-700 shadow-2xl" alt="تصویر بزرگ شده">
+        </div>
+        <div class="mt-6">
+            <a id="lightbox-download-btn" href="" download="marvel-image.jpg" class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold px-6 py-3 rounded-xl shadow-lg flex items-center gap-2 transition">
+                <i class="fa-solid fa-download"></i> دانلود عکس
+            </a>
+        </div>
+    </div>
+
     <!-- SHOPPING CART MODAL -->
     <div id="cart-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-slate-900 border border-amber-500/30 w-full max-w-lg rounded-3xl p-6 shadow-2xl relative flex flex-col max-h-[85vh] animate-fade-in">
@@ -342,7 +357,6 @@
 
         let globalData = { products: {}, settings: {} };
         let currentTab = 'home';
-        let autoScrollInterval = null;
         let currentUser = null;
         let currentAuthMode = 'login';
         let cart = [];
@@ -420,7 +434,6 @@
             toast.classList.add('animate-toast-in');
 
             if (toastTimeout) clearTimeout(toastTimeout);
-            // اعلان فروشگاه برای 5 ثانیه (5000 میلی‌ثانیه) می‌ماند
             toastTimeout = setTimeout(() => {
                 toast.classList.remove('animate-toast-in');
                 toast.classList.add('animate-toast-out');
@@ -764,11 +777,11 @@
             if (product.extraImgs) {
                 const imgsArray = Array.isArray(product.extraImgs) ? product.extraImgs : Object.values(product.extraImgs);
                 if (imgsArray.length > 0) {
-                    let slides = imgsArray.map(img => `<img src="${img}" class="w-40 h-28 object-cover rounded-xl border border-slate-700 flex-shrink-0" onerror="this.src='https://placehold.co/200x150/1e293b/a855f7?text=Marvel+City'">`).join('');
+                    let slides = imgsArray.map(img => `<img src="${img}" onclick="openLightbox('${img}')" class="w-40 h-28 object-cover rounded-xl border border-slate-700 flex-shrink-0 cursor-pointer hover:opacity-80 transition" onerror="this.src='https://placehold.co/200x150/1e293b/a855f7?text=Marvel+City'">`).join('');
                     extraImagesHTML = `
                         <div class="mt-4">
-                            <label class="block text-xs font-semibold text-slate-400 mb-2">تصاویر بیشتر (اسکرول افقی)</label>
-                            <div id="extra-imgs-scroll" class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
+                            <label class="block text-xs font-semibold text-slate-400 mb-2">تصاویر بیشتر (اسکرول دستی افقی)</label>
+                            <div class="flex gap-3 overflow-x-auto no-scrollbar pb-2">
                                 ${slides}
                             </div>
                         </div>
@@ -792,8 +805,11 @@
 
             modalContent.innerHTML = `
                 <div class="space-y-4">
-                    <div class="relative h-56 rounded-2xl overflow-hidden border border-slate-700">
-                        <img src="${product.mainImg || ''}" class="w-full h-full object-cover" onerror="this.src='https://placehold.co/600x400/1e293b/a855f7?text=Marvel+City'">
+                    <div class="relative h-56 rounded-2xl overflow-hidden border border-slate-700 cursor-pointer group" onclick="openLightbox('${product.mainImg || ''}')">
+                        <img src="${product.mainImg || ''}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.src='https://placehold.co/600x400/1e293b/a855f7?text=Marvel+City'">
+                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-sm gap-2 font-bold">
+                            <i class="fa-solid fa-expand"></i> بزرگنمایی تصویر
+                        </div>
                         ${product.tag ? `<span class="absolute top-3 right-3 bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full">${product.tag}</span>` : ''}
                     </div>
                     <div>
@@ -835,25 +851,21 @@
                     toggleCartModal();
                 });
             };
-            setupAutoScroll();
         }
 
-        function setupAutoScroll() {
-            if (autoScrollInterval) clearInterval(autoScrollInterval);
-            const scrollContainer = document.getElementById('extra-imgs-scroll');
-            if (!scrollContainer) return;
-            let scrollAmount = 0;
-            autoScrollInterval = setInterval(() => {
-                if (!document.getElementById('product-modal').classList.contains('hidden')) {
-                    scrollAmount += 150;
-                    if (scrollAmount >= scrollContainer.scrollWidth - scrollContainer.clientWidth) {
-                        scrollAmount = 0;
-                    }
-                    scrollContainer.scrollTo({ left: scrollAmount, behavior: 'smooth' });
-                } else {
-                    clearInterval(autoScrollInterval);
-                }
-            }, 3000);
+        function openLightbox(imgSrc) {
+            if (!imgSrc) return;
+            const lightboxModal = document.getElementById('image-lightbox-modal');
+            const lightboxImg = document.getElementById('lightbox-img');
+            const downloadBtn = document.getElementById('lightbox-download-btn');
+
+            lightboxImg.src = imgSrc;
+            downloadBtn.href = imgSrc;
+            lightboxModal.classList.remove('hidden');
+        }
+
+        function closeLightbox() {
+            document.getElementById('image-lightbox-modal').classList.add('hidden');
         }
 
         function setActiveTab(tab) {
