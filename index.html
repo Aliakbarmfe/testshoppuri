@@ -1,1 +1,463 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>کص رنگین‌کمانی</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+        }
 
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #050011;
+            font-family: 'Lalezar', 'Vazirmatn', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1200px;
+        }
+
+        /* پس‌زمینه رنگین‌کمانی سحابی متحرک */
+        .nebula-bg {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(
+                from 0deg,
+                #ff0055,
+                #ff7700,
+                #ffdd00,
+                #00ff66,
+                #00ccff,
+                #7700ff,
+                #ff00cc,
+                #ff0055
+            );
+            animation: spinNebula 25s linear infinite;
+            filter: blur(90px) brightness(0.65) saturate(1.8);
+            z-index: 0;
+            transition: filter 0.8s ease;
+        }
+
+        body.slow-mo .nebula-bg {
+            animation-duration: 120s;
+            filter: blur(60px) brightness(0.9) saturate(2.5) hue-rotate(90deg);
+        }
+
+        @keyframes spinNebula {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.15); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        /* بوم نقاشی برای ذرات و شهاب‌سنگ‌ها */
+        #cosmosCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        /* کانتینر اصلی سه‌بعدی */
+        .universe-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform-style: preserve-3d;
+            z-index: 2;
+            transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        /* حلقه‌های سیاره‌ای تو در تو */
+        .orbit-system {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform-style: preserve-3d;
+        }
+
+        .ring {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            transform-style: preserve-3d;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.15), inset 0 0 30px rgba(255, 255, 255, 0.15);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* سیارک‌های روی حلقه‌ها */
+        .planet {
+            position: absolute;
+            border-radius: 50%;
+            box-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
+        }
+
+        /* حلقه اول - بیرونی‌ترین */
+        .ring-1 {
+            width: 780px;
+            height: 780px;
+            border-top: 4px solid #00f7ff;
+            border-bottom: 4px solid #ff007f;
+            animation: orbit1 18s linear infinite;
+        }
+        .ring-1 .planet {
+            width: 24px;
+            height: 24px;
+            background: #00f7ff;
+            color: #00f7ff;
+            top: -12px;
+            left: 50%;
+        }
+
+        /* حلقه دوم */
+        .ring-2 {
+            width: 620px;
+            height: 620px;
+            border-left: 5px dashed #ffdd00;
+            border-right: 5px solid #00ff88;
+            animation: orbit2 14s linear infinite reverse;
+        }
+        .ring-2 .planet {
+            width: 18px;
+            height: 18px;
+            background: #ffdd00;
+            color: #ffdd00;
+            bottom: 14%;
+            right: 14%;
+        }
+
+        /* حلقه سوم */
+        .ring-3 {
+            width: 480px;
+            height: 480px;
+            border: 2px dotted rgba(255, 255, 255, 0.6);
+            border-top: 6px solid #aa00ff;
+            animation: orbit3 10s linear infinite;
+        }
+        .ring-3 .planet {
+            width: 28px;
+            height: 28px;
+            background: radial-gradient(circle at 30% 30%, #fff, #aa00ff);
+            color: #aa00ff;
+            top: 50%;
+            left: -14px;
+        }
+
+        /* حلقه چهارم - داخلی و پرسرعت */
+        .ring-4 {
+            width: 350px;
+            height: 350px;
+            border-bottom: 4px solid #ff3300;
+            border-left: 4px solid #00ccff;
+            animation: orbit4 7s linear infinite;
+        }
+
+        /* حالت اسلوموشن برای حلقه‌ها */
+        body.slow-mo .ring-1 { animation-duration: 90s; border-width: 6px; }
+        body.slow-mo .ring-2 { animation-duration: 75s; }
+        body.slow-mo .ring-3 { animation-duration: 60s; }
+        body.slow-mo .ring-4 { animation-duration: 45s; }
+
+        @keyframes orbit1 {
+            0% { transform: rotateX(65deg) rotateY(15deg) rotateZ(0deg); }
+            100% { transform: rotateX(65deg) rotateY(15deg) rotateZ(360deg); }
+        }
+        @keyframes orbit2 {
+            0% { transform: rotateX(-55deg) rotateY(25deg) rotateZ(0deg); }
+            100% { transform: rotateX(-55deg) rotateY(25deg) rotateZ(360deg); }
+        }
+        @keyframes orbit3 {
+            0% { transform: rotateX(45deg) rotateY(-45deg) rotateZ(0deg); }
+            100% { transform: rotateX(45deg) rotateY(-45deg) rotateZ(360deg); }
+        }
+        @keyframes orbit4 {
+            0% { transform: rotateX(75deg) rotateY(0deg) rotateZ(0deg); }
+            100% { transform: rotateX(75deg) rotateY(0deg) rotateZ(-360deg); }
+        }
+
+        /* هسته مرکزی و متن */
+        .core-wrapper {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 40px 60px;
+            border-radius: 40px;
+            background: rgba(10, 5, 25, 0.35);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 
+                0 0 60px rgba(255, 0, 128, 0.4),
+                0 0 120px rgba(0, 247, 255, 0.3),
+                inset 0 0 30px rgba(255, 255, 255, 0.2);
+            animation: floatCore 4s ease-in-out infinite;
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.6s ease;
+        }
+
+        body.slow-mo .core-wrapper {
+            transform: scale(1.18) translateZ(80px);
+            box-shadow: 
+                0 0 100px rgba(255, 255, 255, 0.8),
+                0 0 180px rgba(255, 0, 200, 0.8),
+                inset 0 0 50px rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes floatCore {
+            0%, 100% { transform: translateY(0px) rotateZ(-1deg); }
+            50% { transform: translateY(-18px) rotateZ(1deg); }
+        }
+
+        .main-text {
+            font-size: clamp(2.8rem, 7vw, 6.2rem);
+            font-weight: 900;
+            letter-spacing: -1px;
+            background: linear-gradient(
+                90deg,
+                #ffffff,
+                #ffeb3b,
+                #ff007f,
+                #00f7ff,
+                #76ff03,
+                #ffffff
+            );
+            background-size: 300% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: rainbowFlow 3.5s linear infinite;
+            filter: drop-shadow(0 0 25px rgba(255, 255, 255, 0.5));
+            line-height: 1.3;
+        }
+
+        body.slow-mo .main-text {
+            animation-duration: 12s;
+            filter: drop-shadow(0 0 40px rgba(255, 255, 255, 0.95));
+        }
+
+        @keyframes rainbowFlow {
+            0% { background-position: 0% center; }
+            100% { background-position: 300% center; }
+        }
+
+        /* راهنمای کوچک پایین صفحه */
+        .hint {
+            position: fixed;
+            bottom: 22px;
+            color: rgba(255, 255, 255, 0.75);
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 8px 20px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            z-index: 20;
+            backdrop-filter: blur(5px);
+            transition: opacity 0.4s ease;
+        }
+
+        /* واکنش‌گرایی برای موبایل */
+        @media (max-width: 768px) {
+            .ring-1 { width: 360px; height: 360px; }
+            .ring-2 { width: 290px; height: 290px; }
+            .ring-3 { width: 220px; height: 220px; }
+            .ring-4 { width: 160px; height: 160px; }
+            .core-wrapper { padding: 25px 35px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="nebula-bg"></div>
+    <canvas id="cosmosCanvas"></canvas>
+
+    <div class="universe-container" id="universe">
+        <div class="orbit-system">
+            <div class="ring ring-1"><div class="planet"></div></div>
+            <div class="ring ring-2"><div class="planet"></div></div>
+            <div class="ring ring-3"><div class="planet"></div></div>
+            <div class="ring ring-4"></div>
+        </div>
+
+        <div class="core-wrapper">
+            <h1 class="main-text">ریدم به بدخواه</h1>
+        </div>
+    </div>
+
+    <div class="hint" id="hintText">کلیک را نگه دارید تا زمان اسلوموشن شود ✨</div>
+
+    <script>
+        const canvas = document.getElementById('cosmosCanvas');
+        const ctx = canvas.getContext('2d');
+        const universe = document.getElementById('universe');
+        const hintText = document.getElementById('hintText');
+
+        let width, height;
+        let particles = [];
+        let shockwaves = [];
+        
+        // متغیرهای کنترل زمان و اسلوموشن
+        let timeScale = 1.0;
+        let targetTimeScale = 1.0;
+        let hueOffset = 0;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        // کلاس ذرات کیهانی رنگین‌کمانی
+        class CosmicParticle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.angle = Math.random() * Math.PI * 2;
+                this.radius = Math.random() * (Math.max(width, height) * 0.6) + 50;
+                this.size = Math.random() * 3.5 + 1;
+                this.speed = (Math.random() * 0.015 + 0.003) * (Math.random() < 0.5 ? 1 : -1);
+                this.hue = Math.random() * 360;
+                this.z = Math.random() * 2 + 0.5;
+                this.trail = [];
+            }
+
+            update(dt) {
+                this.angle += this.speed * dt;
+                this.hue = (this.hue + 0.8 * dt) % 360;
+
+                const x = width / 2 + Math.cos(this.angle) * this.radius;
+                const y = height / 2 + Math.sin(this.angle) * (this.radius * 0.65);
+
+                this.trail.push({ x, y });
+                if (this.trail.length > (timeScale < 0.5 ? 18 : 8)) {
+                    this.trail.shift();
+                }
+            }
+
+            draw() {
+                if (this.trail.length < 2) return;
+
+                ctx.beginPath();
+                ctx.moveTo(this.trail[0].x, this.trail[0].y);
+                for (let i = 1; i < this.trail.length; i++) {
+                    ctx.lineTo(this.trail[i].x, this.trail[i].y);
+                }
+                ctx.strokeStyle = `hsla(${this.hue + hueOffset}, 100%, 65%, 0.6)`;
+                ctx.lineWidth = this.size * 0.8;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+
+                const head = this.trail[this.trail.length - 1];
+                ctx.beginPath();
+                ctx.arc(head.x, head.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowBlur = 12;
+                ctx.shadowColor = `hsl(${this.hue + hueOffset}, 100%, 60%)`;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        // امواج شوک نوری هنگام فعال شدن اسلوموشن
+        class Shockwave {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.radius = 10;
+                this.alpha = 1;
+                this.hue = Math.random() * 360;
+            }
+            update(dt) {
+                this.radius += 12 * dt;
+                this.alpha -= 0.02 * dt;
+            }
+            draw() {
+                if (this.alpha <= 0) return;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.strokeStyle = `hsla(${this.hue}, 100%, 70%, ${this.alpha})`;
+                ctx.lineWidth = 4;
+                ctx.stroke();
+            }
+        }
+
+        // ساخت 160 ذره مداری
+        for (let i = 0; i < 160; i++) {
+            particles.push(new CosmicParticle());
+        }
+
+        // حلقه اصلی انیمیشن
+        function animate() {
+            // تغییر نرم سرعت زمان (اسلوموشن گاد)
+            timeScale += (targetTimeScale - timeScale) * 0.08;
+            hueOffset = (hueOffset + 0.5 * timeScale) % 360;
+
+            // ایجاد افکت دنباله‌دار روی بوم
+            ctx.fillStyle = timeScale < 0.5 ? 'rgba(5, 0, 17, 0.15)' : 'rgba(5, 0, 17, 0.25)';
+            ctx.fillRect(0, 0, width, height);
+
+            particles.forEach(p => {
+                p.update(timeScale);
+                p.draw();
+            });
+
+            shockwaves.forEach((sw, index) => {
+                sw.update(timeScale);
+                sw.draw();
+                if (sw.alpha <= 0) shockwaves.splice(index, 1);
+            });
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // تعامل سه‌بعدی با حرکت ماوس
+        document.addEventListener('mousemove', (e) => {
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 22;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 22;
+            universe.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+
+        // فعال‌سازی حالت اسلوموشن با نگه داشتن کلیک یا تاچ
+        function activateSlowMo(e) {
+            targetTimeScale = 0.12; // کاهش سرعت زمان به 12 درصد
+            document.body.classList.add('slow-mo');
+            hintText.textContent = 'حالت اسلوموشن کیهانی فعال شد ⚡';
+            
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            shockwaves.push(new Shockwave(clientX, clientY));
+        }
+
+        function deactivateSlowMo() {
+            targetTimeScale = 1.0;
+            document.body.classList.remove('slow-mo');
+            hintText.textContent = 'کلیک را نگه دارید تا زمان اسلوموشن شود ✨';
+        }
+
+        window.addEventListener('mousedown', activateSlowMo);
+        window.addEventListener('mouseup', deactivateSlowMo);
+        window.addEventListener('touchstart', activateSlowMo);
+        window.addEventListener('touchend', deactivateSlowMo);
+    </script>
+</body>
+</html>
