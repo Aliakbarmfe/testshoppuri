@@ -138,8 +138,11 @@
                 <button onclick="setActiveTab('home')" id="tab-home" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-600/30">
                     <i class="fa-solid fa-house ml-1"></i> صفحه اصلی
                 </button>
-                <button onclick="setActiveTab('gap_channel')" id="tab-gap_channel" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
-                    <i class="fa-solid fa-comments ml-1"></i> گپ چنل
+                <button onclick="setActiveTab('gap')" id="tab-gap" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+                    <i class="fa-solid fa-users ml-1"></i> گپ
+                </button>
+                <button onclick="setActiveTab('channel')" id="tab-channel" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
+                    <i class="fa-solid fa-bullhorn ml-1"></i> چنل
                 </button>
             </nav>
         </div>
@@ -344,7 +347,8 @@
     <script>
         const tabBackgrounds = {
             home: 'photos/safhehasli.jpg',
-            gap_channel: 'photos/safhehgapchannel.jpg'
+            gap: 'photos/safhehgap.jpg',
+            channel: 'photos/safhehchannel.jpg'
         };
 
         let globalData = { products: {}, settings: {} };
@@ -704,7 +708,27 @@
         function renderProducts() {
             const container = document.getElementById('products-container');
             container.innerHTML = '';
-            const productsObj = globalData.products && globalData.products[currentTab] ? globalData.products[currentTab] : {};
+            
+            let productsObj = {};
+            if (currentTab === 'home') {
+                productsObj = globalData.products && globalData.products['home'] ? globalData.products['home'] : {};
+            } else {
+                // Fetch from gap_channel and filter based on product name
+                const sourceObj = globalData.products && globalData.products['gap_channel'] ? globalData.products['gap_channel'] : {};
+                Object.keys(sourceObj).forEach(key => {
+                    const prod = sourceObj[key];
+                    const name = (prod.name || '').toLowerCase();
+                    const hasGap = name.includes('گپ') || name.includes('گروه');
+                    const hasChannel = name.includes('چنل') || name.includes('کانال');
+
+                    if (currentTab === 'gap' && hasGap) {
+                        productsObj[key] = prod;
+                    } else if (currentTab === 'channel' && hasChannel) {
+                        productsObj[key] = prod;
+                    }
+                });
+            }
+
             const productKeys = Object.keys(productsObj);
 
             if (productKeys.length === 0) {
@@ -879,9 +903,13 @@
                 pageTitle.innerHTML = `<span class="w-3 h-8 bg-purple-500 rounded-full inline-block"></span> محصولات آفر‌دار و ویژه`;
                 pageSubtitle.innerText = "تخفیف‌های داغ و محدود تمامی بخش‌ها";
                 container.className = "grid grid-cols-1 gap-4 sm:gap-6 animate-fade-in";
-            } else if (tab === 'gap_channel') {
-                pageTitle.innerHTML = `<span class="w-3 h-8 bg-pink-500 rounded-full inline-block"></span> خدمات گپ و چنل`;
-                pageSubtitle.innerText = "اشتراک‌ها، تبلیغات و خدمات چنل‌ها";
+            } else if (tab === 'gap') {
+                pageTitle.innerHTML = `<span class="w-3 h-8 bg-pink-500 rounded-full inline-block"></span> خدمات گپ`;
+                pageSubtitle.innerText = "مدیریت، ارتقا و خدمات گروه‌ها";
+                container.className = "grid grid-cols-2 gap-4 sm:gap-6 animate-fade-in";
+            } else if (tab === 'channel') {
+                pageTitle.innerHTML = `<span class="w-3 h-8 bg-cyan-500 rounded-full inline-block"></span> خدمات چنل`;
+                pageSubtitle.innerText = "اشتراک‌ها، تبلیغات و خدمات کانال‌ها";
                 container.className = "grid grid-cols-2 gap-4 sm:gap-6 animate-fade-in";
             }
             renderProducts();
@@ -907,3 +935,4 @@
     </script>
 </body>
 </html>
+ 
