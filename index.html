@@ -138,12 +138,6 @@
                 <button onclick="setActiveTab('home')" id="tab-home" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-600/30">
                     <i class="fa-solid fa-house ml-1"></i> صفحه اصلی
                 </button>
-                <button onclick="setActiveTab('cod')" id="tab-cod" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
-                    <i class="fa-solid fa-gamepad ml-1"></i> کالاف دیوتی موبایل
-                </button>
-                <button onclick="setActiveTab('cp')" id="tab-cp" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
-                    <i class="fa-solid fa-coins ml-1"></i> خرید سیپی
-                </button>
                 <button onclick="setActiveTab('gap_channel')" id="tab-gap_channel" class="tab-btn px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition bg-slate-800 text-slate-300 hover:bg-slate-700">
                     <i class="fa-solid fa-comments ml-1"></i> گپ چنل
                 </button>
@@ -350,8 +344,6 @@
     <script>
         const tabBackgrounds = {
             home: 'photos/safhehasli.jpg',
-            cod: 'photos/safhehcallof.jpg',
-            cp: 'photos/safhehcp.jpg',
             gap_channel: 'photos/safhehgapchannel.jpg'
         };
 
@@ -887,14 +879,6 @@
                 pageTitle.innerHTML = `<span class="w-3 h-8 bg-purple-500 rounded-full inline-block"></span> محصولات آفر‌دار و ویژه`;
                 pageSubtitle.innerText = "تخفیف‌های داغ و محدود تمامی بخش‌ها";
                 container.className = "grid grid-cols-1 gap-4 sm:gap-6 animate-fade-in";
-            } else if (tab === 'cod') {
-                pageTitle.innerHTML = `<span class="w-3 h-8 bg-blue-500 rounded-full inline-block"></span> بخش کالاف دیوتی موبایل`;
-                pageSubtitle.innerText = "خرید اکانت، بتل پس و خدمات کالاف";
-                container.className = "grid grid-cols-1 gap-4 sm:gap-6 animate-fade-in";
-            } else if (tab === 'cp') {
-                pageTitle.innerHTML = `<span class="w-3 h-8 bg-amber-500 rounded-full inline-block"></span> خرید سیپی (CP)`;
-                pageSubtitle.innerText = "شارژ سریع سیپی با نازل‌ترین قیمت";
-                container.className = "grid grid-cols-2 gap-4 sm:gap-6 animate-fade-in";
             } else if (tab === 'gap_channel') {
                 pageTitle.innerHTML = `<span class="w-3 h-8 bg-pink-500 rounded-full inline-block"></span> خدمات گپ و چنل`;
                 pageSubtitle.innerText = "اشتراک‌ها، تبلیغات و خدمات چنل‌ها";
@@ -922,4 +906,4 @@
         };
     </script>
 </body>
-    </html> 
+</html>
